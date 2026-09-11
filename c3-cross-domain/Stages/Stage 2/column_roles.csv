@@ -1,0 +1,49 @@
+dataset,column,role,distinct_values
+host,timestamp,structure,133527
+host,host_id,identity,8
+host,host_ip,structure,8
+host,process_id,structure,25997
+host,parent_process_id,structure,12572
+host,process_name,categorical feature,15
+host,event_type,categorical feature,5
+host,trace_mode,component output,2
+host,trace_source,categorical feature,4
+host,src_ip,structure,87
+host,dst_ip,structure,87
+host,src_port,structure,34401
+host,dst_port,structure,724
+host,protocol,categorical feature,3
+host,syscall_name,categorical feature,13
+host,syscall_result,categorical feature,2
+host,process_state,categorical feature,5
+host,memory_alloc_bytes,numeric feature,5554
+host,file_operation,categorical feature,8
+host,threat_confidence_score,component output,9476
+host,threat_state,component output,2
+host,cpu_usage,numeric feature,4919
+host,disk_read_bytes,numeric feature,3971
+host,disk_write_bytes,numeric feature,4962
+host,label,never a feature,2
+host,type,never a feature,8
+iot,timestamp,structure,59345
+iot,iot_device_id,identity,14
+iot,src_ip,structure,14
+iot,dst_ip,structure,86
+iot,src_port,structure,39078
+iot,dst_port,structure,18
+iot,protocol,categorical feature,2
+iot,service,categorical feature,9
+iot,flow_duration,numeric feature,39680
+iot,src_bytes,numeric feature,33279
+iot,dst_bytes,numeric feature,30014
+iot,src_packets,numeric feature,3046
+iot,dst_packets,numeric feature,2535
+iot,iat_mean,numeric feature,32283
+iot,iat_std,numeric feature,19833
+iot,packet_size_mean,numeric feature,32361
+iot,packet_size_std,numeric feature,22357
+iot,connection_rate,numeric feature,29
+iot,confidence_score,component output,7338
+iot,label,never a feature,2
+iot,predicted_class,component output,2
+iot,attack_type,never a feature,10
