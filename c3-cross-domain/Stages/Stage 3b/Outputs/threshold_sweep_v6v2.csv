@@ -1,0 +1,10 @@
+links,T,scenarios_2plus,events_in_2plus,mean_size,max_size,over_200,attack_chains_whole_%,normal_chains_whole_%,scan_bursts_whole,password_bursts_whole,flood_bursts_whole,ssh_apart_%
+A: Stage 3 links,2,15622,102556,6.56,118,0,95.2,0.0,0/163,0/63,60/123,1.6
+A: Stage 3 links,3,13576,98098,7.23,118,0,95.2,0.0,0/163,0/63,60/123,1.6
+A: Stage 3 links,4,13964,97506,6.98,118,0,56.6,0.0,0/163,0/63,60/123,2.6
+B: + service hand-off,2,15124,102842,6.8,118,0,96.6,88.8,0/163,0/63,60/123,1.6
+B: + service hand-off,3,13078,98384,7.52,118,0,96.6,88.8,0/163,0/63,60/123,1.6
+B: + service hand-off,4,13596,97595,7.18,118,0,57.2,69.7,0/163,0/63,60/123,2.6
+C: + same remote source,2,14826,106153,7.16,118,0,96.6,89.8,163/163,63/63,123/123,1.5
+C: + same remote source,3,12780,101695,7.96,118,0,96.6,89.8,163/163,63/63,123/123,1.5
+C: + same remote source,4,13565,100846,7.43,118,0,57.2,69.9,163/163,63/63,123/123,2.6
