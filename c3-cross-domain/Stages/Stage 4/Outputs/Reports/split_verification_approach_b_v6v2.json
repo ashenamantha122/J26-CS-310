@@ -1,0 +1,51 @@
+{
+  "source": "Stage 3b + original Host/IoT logs",
+  "seed": 42,
+  "target": {
+    "train": [
+      8946,
+      0
+    ],
+    "validation": [
+      722,
+      556
+    ],
+    "test": [
+      1112,
+      1444
+    ]
+  },
+  "actual": {
+    "train": {
+      "graphs": 8946,
+      "attack_graphs": 0,
+      "nodes": 69013,
+      "directed_edges": 122532
+    },
+    "validation": {
+      "graphs": 1278,
+      "attack_graphs": 556,
+      "nodes": 10880,
+      "directed_edges": 20462
+    },
+    "test_normal": {
+      "graphs": 1112,
+      "attack_graphs": 0,
+      "nodes": 8331,
+      "directed_edges": 14812
+    },
+    "test_attack": {
+      "graphs": 1444,
+      "attack_graphs": 1444,
+      "nodes": 13471,
+      "directed_edges": 26502
+    }
+  },
+  "features": {
+    "node": 92,
+    "edge": 14
+  },
+  "scenario_overlap": 0,
+  "validation_contains_normal_and_attack": true,
+  "previous_B1_files_compared": false
+}
