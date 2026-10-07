@@ -1,0 +1,31 @@
+{
+  "model": "R-GCN-GAE",
+  "dataset_split": "Approach B",
+  "input_features": 84,
+  "relations": [
+    "e_type=connect_accept",
+    "e_type=entry_to_child",
+    "e_type=fallback_accept",
+    "e_type=flow_same_dst",
+    "e_type=flow_same_src_dst",
+    "e_type=iot_host_match",
+    "e_type=parent_child",
+    "e_type=same_process",
+    "e_type=same_remote_source",
+    "e_type=service_handoff"
+  ],
+  "train_graphs": 8946,
+  "pooling": "mean",
+  "training_hyperparameters": {
+    "kind": "rgcn",
+    "hidden": 64,
+    "latent": 32,
+    "dropout": 0.1,
+    "lr": 0.001,
+    "weight_decay": 1e-05,
+    "batch_size": 128,
+    "epochs": 40,
+    "seed": 42
+  },
+  "train_dataset_path": "/content/drive/MyDrive/GNN/Stage 4 /graphs_b1_train_v6v2.npz"
+}
