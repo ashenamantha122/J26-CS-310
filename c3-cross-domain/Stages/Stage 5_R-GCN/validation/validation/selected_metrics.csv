@@ -1,0 +1,9 @@
+Metric,Validation Result
+Accuracy,84.04%
+Precision,93.78%
+Recall,67.81%
+F1-Score,78.71%
+ROC-AUC,87.42%
+PR-AUC,88.56%
+False Positive Rate,3.46%
+Specificity,96.54%

@@ -1,0 +1,9 @@
+Metric,Value (%)
+accuracy,78.91
+precision,95.11
+recall,66.07
+f1,77.97
+auc,86.21
+pr_auc,91.29
+fpr,4.41
+specificity,95.59

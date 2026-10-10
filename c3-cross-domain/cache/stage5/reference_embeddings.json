@@ -1,0 +1,11 @@
+{
+  "cache_format": 1,
+  "checkpoint_sha256": "efc13fee5e56e717a66ec1f89e3077528ba00f2f3097d5d35bc22647178c53d2",
+  "train_npz_sha256": "f079e081f663b015cd125fe13c2688e40973ece0e1feda5570c20eb4d4eefbaa",
+  "feature_names_sha256": "901c5903d3cbed67c28db9166bdfd8a5749aa5a789b95c8314ec37c90863bf85",
+  "torch": "2.14.1+cpu",
+  "numpy": "2.5.3",
+  "scoring": "stage5_model.score_bucket mean-node-embedding",
+  "n_graphs": 8946,
+  "embeddings_sha256": "b5734897f7da67960e7e0d1a717b54afff7ab67e8a7324163ba86b406a11df3c"
+}

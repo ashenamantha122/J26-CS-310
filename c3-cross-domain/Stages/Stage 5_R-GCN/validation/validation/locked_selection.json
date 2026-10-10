@@ -1,0 +1,19 @@
+{
+  "training_origin": "fresh_training_approach_b_normal_only",
+  "validation": "approach_b_mixed",
+  "selected_epoch": 40,
+  "score": "knn_embedding",
+  "threshold": 2.5825197985552437,
+  "max_validation_fpr": 0.05,
+  "knn_k": 5,
+  "checkpoint_path": "/content/drive/MyDrive/GNN/Models/RGCN/training/checkpoints/epoch_040.pt",
+  "validation_metrics": {
+    "accuracy": 0.8403755868544601,
+    "precision": 0.9378109452736318,
+    "recall": 0.6780575539568345,
+    "f1": 0.7870563674321504,
+    "auc": 0.8742252735207956,
+    "fpr": 0.03462603878116344
+  },
+  "test_exposure_note": "Exploratory: source scenarios were previously inspected in Approach A; test predictions never used for the current threshold selection."
+}
