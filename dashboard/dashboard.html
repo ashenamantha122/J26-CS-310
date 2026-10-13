@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LAAX Component 4 — Decision Engine</title>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --panel: #ffffff;
+    --border: #e2e0db;
+    --fg: #1c1b19;
+    --fg-muted: #6b6860;
+    --accent: #2f5d50;
+    --bad: #b3432d;
+    --warn: #b8862f;
+    --ok: #2f6d4f;
+    --none: #8a8678;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #171614;
+      --panel: #1f1e1b;
+      --border: #35332d;
+      --fg: #ece9e2;
+      --fg-muted: #9b968a;
+      --accent: #7fb5a3;
+      --bad: #e0795f;
+      --warn: #e0b35f;
+      --ok: #6fbf8f;
+      --none: #a39d8f;
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 24px max(16px, env(safe-area-inset-right, 0px)) 48px max(16px, env(safe-area-inset-left, 0px));
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin: 0 0 4px 0;
+  }
+  h1 {
+    font-size: 26px;
+    font-weight: 600;
+    margin: 0 0 10px 0;
+  }
+  .takeaway {
+    font-size: 15px;
+    color: var(--fg);
+    max-width: 68ch;
+    margin: 0 0 24px 0;
+    line-height: 1.5;
+  }
+  .takeaway b { font-weight: 700; }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .stat {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--stat-accent, var(--border));
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--fg-muted);
+    margin: 0 0 6px 0;
+  }
+  .stat-num {
+    font-size: 28px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    margin: 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .card-title { font-size: 15px; font-weight: 600; margin: 0 0 2px 0; }
+  .card-note { font-size: 12.5px; color: var(--fg-muted); margin: 0 0 12px 0; line-height: 1.4; }
+
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .chip {
+    font-size: 12.5px;
+    color: var(--fg-muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  .chip b { color: var(--fg); font-weight: 600; }
+
+  #chart { min-height: 220px; position: relative; }
+  .bar-label { font-size: 11px; fill: var(--fg-muted); }
+  .bar-value { font-size: 12px; fill: var(--fg); font-weight: 600; }
+  .tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity .1s;
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+  }
+
+  input.search {
+    width: 100%;
+    max-width: 320px;
+    font-size: 14px;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--fg);
+    margin-bottom: 10px;
+  }
+  input.search:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .table-wrap {
+    max-height: 560px;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 700px; }
+  th {
+    position: sticky; top: 0;
+    background: var(--panel);
+    text-align: left;
+    font-weight: 600;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: .02em;
+    color: var(--fg-muted);
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+  }
+  th[data-sorted="asc"]::after { content: " \2191"; }
+  th[data-sorted="desc"]::after { content: " \2193"; }
+  td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--border);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  tbody tr:hover { background: rgba(128,128,128,.07); }
+
+  .badge {
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 999px;
+  }
+  .badge-ISOLATE { background: color-mix(in srgb, var(--bad) 18%, transparent); color: var(--bad); }
+  .badge-RESTRICT { background: color-mix(in srgb, var(--warn) 22%, transparent); color: var(--warn); }
+  .badge-MONITOR { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
+  .badge-NONE { background: color-mix(in srgb, var(--none) 20%, transparent); color: var(--none); }
+
+  .count { font-size: 12px; color: var(--fg-muted); margin-top: 8px; }
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--fg-muted);
+    font-size: 14px;
+  }
+  .empty-state code {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 6px;
+  }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92em; }
+
+  @media (max-width: 640px) {
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div id="loading-state" class="empty-state">Loading <code>decisions.json</code>&hellip;</div>
+
+<div id="app" hidden>
+  <p class="eyebrow">LAAX &middot; Component 4</p>
+  <h1>Decision Engine — containment outcomes</h1>
+  <p class="takeaway" id="takeaway"></p>
+
+  <div class="stat-row" id="stats">
+    <div class="stat" style="--stat-accent: var(--bad)">
+      <p class="stat-label">Isolate</p>
+      <p class="stat-num" id="stat-ISOLATE">0</p>
+    </div>
+    <div class="stat" style="--stat-accent: var(--warn)">
+      <p class="stat-label">Restrict</p>
+      <p class="stat-num" id="stat-RESTRICT">0</p>
+    </div>
+    <div class="stat" style="--stat-accent: var(--ok)">
+      <p class="stat-label">Monitor</p>
+      <p class="stat-num" id="stat-MONITOR">0</p>
+    </div>
+    <div class="stat" style="--stat-accent: var(--none)">
+      <p class="stat-label">None</p>
+      <p class="stat-num" id="stat-NONE">0</p>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <p class="card-title">Containment level, by alert</p>
+      <p class="card-note">One decision per replayed alert — this run's actual output.</p>
+      <div id="chart"></div>
+    </div>
+    <div class="card">
+      <p class="card-title">Enforcement path taken</p>
+      <p class="card-note">Routed by asset type: managed hosts go to the eBPF/LSM enforcer, agentless IoT devices go to the SDN enforcer.</p>
+      <div class="chips">
+        <span class="chip">eBPF/LSM (managed Linux): <b id="route-MANAGED_LINUX">0</b></span>
+        <span class="chip">SDN (agentless IoT): <b id="route-IOT_AGENTLESS">0</b></span>
+      </div>
+      <p class="card-note" style="margin-top:14px;">Every decision also carries a TTL: the rollback manager releases the host automatically when it expires, with no manual step.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="card-title">Every decision, traced to its rule</p>
+    <p class="card-note">Each row is one alert through <code>decide()</code>: the matched row in <code>rule_matrix.yaml</code> is the explanation. Click a column to sort, or search below.</p>
+    <input class="search" id="search" type="text" placeholder="Search alert id, threat type, asset&hellip;">
+    <div class="table-wrap">
+      <table id="table">
+        <thead>
+          <tr>
+            <th data-field="alert_id" data-type="string">Alert</th>
+            <th data-field="threat_type" data-type="string">Threat type</th>
+            <th data-field="confidence" data-type="number">Confidence</th>
+            <th data-field="asset_id" data-type="string">Asset</th>
+            <th data-field="asset_type" data-type="string">Asset type</th>
+            <th data-field="asset_criticality" data-type="string">Criticality</th>
+            <th data-field="level" data-type="string">Decision</th>
+            <th data-field="ttl_seconds" data-type="number">TTL</th>
+            <th data-field="rule_matched" data-type="string">Rule matched</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="count" id="count"></p>
+  </div>
+</div>
+
+<div id="error-state" class="empty-state" hidden>
+  Could not load <code>decisions.json</code>.<br><br>
+  Run <code>python3 export_decisions.py your_alerts.jsonl</code> first, and make sure you opened this
+  page through a local server (see README.md) rather than double-clicking the file.
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  const LEVEL_ORDER = ["ISOLATE", "RESTRICT", "MONITOR", "NONE"];
+  const LEVEL_COLOR_VAR = {
+    ISOLATE: "--bad",
+    RESTRICT: "--warn",
+    MONITOR: "--ok",
+    NONE: "--none"
+  };
+
+  function cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  function renderStats(rows) {
+    const counts = { ISOLATE: 0, RESTRICT: 0, MONITOR: 0, NONE: 0 };
+    const routes = { MANAGED_LINUX: 0, IOT_AGENTLESS: 0 };
+    rows.forEach((r) => {
+      if (counts[r.level] !== undefined) counts[r.level]++;
+      if (routes[r.route_to] !== undefined) routes[r.route_to]++;
+    });
+    LEVEL_ORDER.forEach((l) => {
+      document.getElementById("stat-" + l).textContent = counts[l];
+    });
+    document.getElementById("route-MANAGED_LINUX").textContent = routes.MANAGED_LINUX;
+    document.getElementById("route-IOT_AGENTLESS").textContent = routes.IOT_AGENTLESS;
+
+    document.getElementById("takeaway").innerHTML =
+      "Replayed <b>" + rows.length + " alerts</b> through <code>DecisionEngine.decide()</code>: " +
+      "<b>" + counts.ISOLATE + " isolated</b>, " + counts.RESTRICT + " restricted, " +
+      counts.MONITOR + " monitored, " + counts.NONE + " cleared with no action &mdash; zero crashes, " +
+      "every outcome traceable to one row in <code>rule_matrix.yaml</code>.";
+
+    return counts;
+  }
+
+  function renderChart(counts) {
+    const box = document.getElementById("chart");
+    box.innerHTML = "";
+    const width = box.clientWidth || 320;
+    const height = 220;
+    const margin = { top: 24, right: 12, bottom: 28, left: 34 };
+    const plotW = width - margin.left - margin.right;
+    const plotH = height - margin.top - margin.bottom;
+    const maxCount = Math.max(1, ...LEVEL_ORDER.map((l) => counts[l]));
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", "100%");
+    svg.setAttribute("viewBox", "0 0 " + width + " " + height);
+    box.appendChild(svg);
+
+    const tooltip = document.createElement("div");
+    tooltip.className = "tooltip";
+    box.style.position = "relative";
+    box.appendChild(tooltip);
+
+    const n = LEVEL_ORDER.length;
+    const slot = plotW / n;
+    const barW = Math.min(56, slot * 0.6);
+
+    // gridlines (4 ticks)
+    for (let i = 0; i <= 4; i++) {
+      const v = (maxCount / 4) * i;
+      const y = margin.top + plotH - (v / maxCount) * plotH;
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("x1", margin.left);
+      line.setAttribute("x2", width - margin.right);
+      line.setAttribute("y1", y);
+      line.setAttribute("y2", y);
+      line.setAttribute("stroke", cssVar("--border"));
+      line.setAttribute("stroke-width", "1");
+      svg.appendChild(line);
+
+      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      label.setAttribute("x", margin.left - 8);
+      label.setAttribute("y", y + 3);
+      label.setAttribute("text-anchor", "end");
+      label.setAttribute("class", "bar-label");
+      label.textContent = Math.round(v);
+      svg.appendChild(label);
+    }
+
+    LEVEL_ORDER.forEach((level, i) => {
+      const count = counts[level];
+      const barH = (count / maxCount) * plotH;
+      const x = margin.left + i * slot + (slot - barW) / 2;
+      const y = margin.top + plotH - barH;
+
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("x", x);
+      rect.setAttribute("y", y);
+      rect.setAttribute("width", barW);
+      rect.setAttribute("height", Math.max(barH, 1));
+      rect.setAttribute("rx", 4);
+      rect.setAttribute("fill", cssVar(LEVEL_COLOR_VAR[level]));
+      rect.addEventListener("mousemove", (e) => {
+        const r = box.getBoundingClientRect();
+        tooltip.style.opacity = 1;
+        tooltip.style.left = (e.clientX - r.left + 10) + "px";
+        tooltip.style.top = (e.clientY - r.top - 28) + "px";
+        tooltip.innerHTML = "<b>" + level + "</b> &middot; " + count + " alert" + (count === 1 ? "" : "s");
+      });
+      rect.addEventListener("mouseleave", () => { tooltip.style.opacity = 0; });
+      svg.appendChild(rect);
+
+      const value = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      value.setAttribute("x", x + barW / 2);
+      value.setAttribute("y", y - 6);
+      value.setAttribute("text-anchor", "middle");
+      value.setAttribute("class", "bar-value");
+      value.textContent = count;
+      svg.appendChild(value);
+
+      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      label.setAttribute("x", x + barW / 2);
+      label.setAttribute("y", height - margin.bottom + 16);
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("class", "bar-label");
+      label.textContent = level;
+      svg.appendChild(label);
+    });
+  }
+
+  function initTable(rows) {
+    let sortField = null;
+    let sortDir = 1;
+    let term = "";
+
+    function draw() {
+      let view = rows.slice();
+      if (term) {
+        const q = term.toLowerCase();
+        view = view.filter((r) =>
+          String(r.alert_id).toLowerCase().includes(q) ||
+          String(r.threat_type).toLowerCase().includes(q) ||
+          String(r.asset_id).toLowerCase().includes(q) ||
+          String(r.asset_type).toLowerCase().includes(q) ||
+          String(r.level).toLowerCase().includes(q)
+        );
+      }
+      if (sortField) {
+        view.sort((a, b) => {
+          const av = a[sortField], bv = b[sortField];
+          if (typeof av === "number" && typeof bv === "number") return (av - bv) * sortDir;
+          return String(av).localeCompare(String(bv)) * sortDir;
+        });
+      }
+
+      const tbody = document.querySelector("#table tbody");
+      tbody.innerHTML = "";
+      view.forEach((r) => {
+        const tr = document.createElement("tr");
+        const cells = [
+          r.alert_id, r.threat_type,
+          (typeof r.confidence === "number" ? r.confidence.toFixed(2) : r.confidence),
+          r.asset_id, r.asset_type, r.asset_criticality,
+          null, r.ttl_seconds + "s", r.rule_matched
+        ];
+        cells.forEach((val, i) => {
+          const td = document.createElement("td");
+          if (i === 6) {
+            const badge = document.createElement("span");
+            badge.className = "badge badge-" + r.level;
+            badge.textContent = r.level;
+            td.appendChild(badge);
+          } else {
+            td.textContent = val;
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      document.getElementById("count").textContent = "Showing " + view.length + " of " + rows.length + " alerts.";
+    }
+
+    document.querySelectorAll("#table th").forEach((th) => {
+      th.addEventListener("click", () => {
+        const field = th.dataset.field;
+        if (sortField === field) { sortDir = -sortDir; } else { sortField = field; sortDir = 1; }
+        document.querySelectorAll("#table th").forEach((h) => h.removeAttribute("data-sorted"));
+        th.setAttribute("data-sorted", sortDir === 1 ? "asc" : "desc");
+        draw();
+      });
+    });
+
+    document.getElementById("search").addEventListener("input", (e) => {
+      term = e.target.value;
+      draw();
+    });
+
+    draw();
+  }
+
+  fetch("decisions.json")
+    .then((r) => {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })
+    .then((rows) => {
+      document.getElementById("loading-state").hidden = true;
+      document.getElementById("app").hidden = false;
+      const counts = renderStats(rows);
+      renderChart(counts);
+      initTable(rows);
+      window.addEventListener("resize", () => renderChart(counts));
+    })
+    .catch((err) => {
+      console.error(err);
+      document.getElementById("loading-state").hidden = true;
+      document.getElementById("error-state").hidden = false;
+    });
+})();
+</script>
+</body>
+</html>
