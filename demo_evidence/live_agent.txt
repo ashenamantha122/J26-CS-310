@@ -1,0 +1,4 @@
+captured: 2026-09-01 20:06:52
+command:  live_probe.sh 12 & run_live.py --lsm --baseline 12 --seconds 16
+
+cannot start loader: loader did not become ready: sudo: a password is required

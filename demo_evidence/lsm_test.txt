@@ -1,0 +1,5 @@
+captured: 2026-09-01 20:06:42
+command:  python3 scenario/test_lsm.py
+
+cannot start loader with --lsm: loader did not become ready: sudo: a password is required
+check: cat /sys/kernel/security/lsm   (needs 'bpf')

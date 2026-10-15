@@ -1,0 +1,4 @@
+captured: 2026-09-01 20:06:32
+command:  python3 run_live.py --calibrate --iterations 30
+
+cannot start loader: loader did not become ready: sudo: a password is required
