@@ -1,0 +1,36 @@
+{
+  "generated_rows": 91463,
+  "reference_rows": 91463,
+  "seconds": 6.2,
+  "columns_equal": true,
+  "type_counts_generated": {
+    "connect_accept": 8171,
+    "entry_to_child": 11877,
+    "fallback_accept": 695,
+    "flow_same_dst": 1023,
+    "flow_same_src": 5892,
+    "flow_same_src_dst": 7411,
+    "iot_host_match": 5620,
+    "parent_child": 3286,
+    "same_process": 47488
+  },
+  "type_counts_reference": {
+    "connect_accept": 8171,
+    "entry_to_child": 11877,
+    "fallback_accept": 695,
+    "flow_same_dst": 1023,
+    "flow_same_src": 5892,
+    "flow_same_src_dst": 7411,
+    "iot_host_match": 5620,
+    "parent_child": 3286,
+    "same_process": 47488
+  },
+  "type_counts_equal": true,
+  "row_by_row_equal_original_order": true,
+  "bytes_identical_to_reference": true,
+  "key_sets_equal": true,
+  "merged_rows": 91463,
+  "points_mismatch": 0,
+  "max_abs_gap_diff": 0.0,
+  "unsorted_equal_after_sort": true
+}

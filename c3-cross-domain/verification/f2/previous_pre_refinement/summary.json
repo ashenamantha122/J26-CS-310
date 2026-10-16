@@ -1,0 +1,113 @@
+{
+  "counts": {
+    "analysed": 1499,
+    "potential_lateral_movement_supported": 164,
+    "no_supporting_path": 1227,
+    "insufficient_evidence": 108,
+    "processing_errors": 0
+  },
+  "reconciles": true,
+  "reason_codes": {
+    "no_cross_host_communication": 1076,
+    "host_to_host_without_pivot_context": 151,
+    "verified_cross_host_progression": 164,
+    "fewer_than_3_events": 108
+  },
+  "processing_errors": {},
+  "search": {
+    "max_candidates_per_scenario": 4,
+    "truncated_scenarios": 0
+  },
+  "evidence_problems_total": 0,
+  "supported": {
+    "scenarios": 164,
+    "best_path_hops": {
+      "1": 163,
+      "2": 1
+    },
+    "pivot_kind_of_first_segment": {
+      "service_handoff": 24,
+      "process_lineage": 140
+    },
+    "entry_source_class": {
+      "unclassified_source": 12,
+      "iot_flow_matched": 152
+    },
+    "first_hop_same_second_share": 0.506,
+    "paths_per_scenario": {
+      "1": 157,
+      "2": 6,
+      "3": 1
+    },
+    "distinct_host_pairs": 46
+  },
+  "ambiguous_or_rejected_candidates_in_real_data": {},
+  "relationship_presence_vs_assessment": {
+    "host_to_host -> insufficient_evidence": 2,
+    "host_to_host -> no_supporting_path": 151,
+    "host_to_host -> potential_lateral_movement_supported": 11,
+    "host_to_host+iot_host -> potential_lateral_movement_supported": 153,
+    "no_host_to_host -> insufficient_evidence": 106,
+    "no_host_to_host -> no_supporting_path": 804,
+    "no_host_to_host+iot_host -> no_supporting_path": 272
+  },
+  "timing": {
+    "stage2_s": 4.6,
+    "stage3_3b_s": 48.6,
+    "stage4_s": 4.0,
+    "f1_inference_s": 9.3,
+    "handoff_s": 33.3,
+    "f2_10_representative_s": 0.127,
+    "f2_all_s": 40.14
+  },
+  "memory": {
+    "process_peak_working_set_mb_before_f2": 769.0,
+    "process_peak_working_set_mb_after_f2": 786.9,
+    "python_heap_peak_during_f2_mb": 30.81
+  },
+  "scientific_note": "Counts describe how many F1-suspicious scenarios contain a verified, directed, time-consistent cross-host progression under the documented criteria. They are not detection accuracy: no independent lateral-movement ground truth exists, and the attack/normal scenario labels are not lateral-movement labels.",
+  "example_checks": {
+    "supported_one_hop_process_lineage": {
+      "scenario_id": 645,
+      "assessment": "potential_lateral_movement_supported",
+      "reason_code": "verified_cross_host_progression",
+      "events_exist_with_original_timestamps": true,
+      "n_events_in_scenario": 10
+    },
+    "supported_one_hop_service_handoff": {
+      "scenario_id": 14458,
+      "assessment": "potential_lateral_movement_supported",
+      "reason_code": "verified_cross_host_progression",
+      "events_exist_with_original_timestamps": true,
+      "n_events_in_scenario": 3
+    },
+    "supported_multi_hop": {
+      "scenario_id": 22761,
+      "assessment": "potential_lateral_movement_supported",
+      "reason_code": "verified_cross_host_progression",
+      "events_exist_with_original_timestamps": true,
+      "n_events_in_scenario": 9
+    },
+    "negative_host_to_host_without_pivot": {
+      "scenario_id": 534,
+      "assessment": "no_supporting_path",
+      "reason_code": "host_to_host_without_pivot_context",
+      "events_exist_with_original_timestamps": true,
+      "n_events_in_scenario": 3
+    },
+    "negative_single_host_no_cross_host_communication": {
+      "scenario_id": 1168,
+      "assessment": "no_supporting_path",
+      "reason_code": "no_cross_host_communication",
+      "events_exist_with_original_timestamps": true,
+      "n_events_in_scenario": 3
+    },
+    "insufficient_two_event_with_host_to_host_link": {
+      "scenario_id": 4370,
+      "assessment": "insufficient_evidence",
+      "reason_code": "fewer_than_3_events",
+      "events_exist_with_original_timestamps": true,
+      "n_events_in_scenario": 2
+    }
+  }
+}

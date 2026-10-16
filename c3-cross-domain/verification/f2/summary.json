@@ -1,0 +1,197 @@
+{
+  "counts": {
+    "analysed": 1499,
+    "potential_lateral_movement_supported": 141,
+    "cross_host_service_chain_only": 23,
+    "no_supporting_path": 1227,
+    "insufficient_evidence": 108,
+    "processing_errors": 0
+  },
+  "reconciles": true,
+  "reason_codes": {
+    "no_cross_host_communication": 1076,
+    "host_to_host_without_pivot_context": 151,
+    "verified_service_chain_without_process_lineage": 23,
+    "verified_cross_host_progression": 141,
+    "fewer_than_3_events": 108
+  },
+  "processing_errors": {},
+  "f1_gate": {
+    "violations": [],
+    "f1_scores_unchanged_by_f2": true,
+    "assessment_f1_equals_authoritative": true
+  },
+  "search": {
+    "max_candidates_per_scenario": 4,
+    "truncated_scenarios": 0,
+    "scenarios_with_host_revisits_rejected": 0,
+    "scenarios_with_origin_revisits_rejected": 0
+  },
+  "evidence_problems_total": 0,
+  "potential_lateral_movement_supported": {
+    "scenarios": 141,
+    "evidence_types": {
+      "process_lineage": 140,
+      "process_lineage+service_handoff": 1
+    },
+    "best_path_hops": {
+      "1": 141
+    },
+    "entry_process_of_first_qualifying_path": {
+      "nginx": 38,
+      "sshd": 63,
+      "mosquitto": 40
+    },
+    "entry_source_class": {
+      "iot_flow_matched": 137,
+      "unclassified_source": 4
+    },
+    "first_hop_same_second_share": 0.482
+  },
+  "cross_host_service_chain_only": {
+    "scenarios": 23,
+    "best_path_hops": {
+      "1": 22,
+      "2": 1
+    },
+    "entry_process": {
+      "nginx": 8,
+      "python3": 12,
+      "node": 3
+    },
+    "destination_ports": {
+      "8080": 8,
+      "6379": 6,
+      "5432": 5,
+      "3306": 4
+    }
+  },
+  "destination_side_activity_flagged_no_supporting_path": 95,
+  "scenario_36595": {
+    "assessment": "potential_lateral_movement_supported",
+    "evidence_types": [
+      "process_lineage",
+      "service_handoff"
+    ],
+    "path_classifications": [
+      "process_lineage_progression",
+      "service_chain_only"
+    ]
+  },
+  "scenario_22761": {
+    "assessment": "cross_host_service_chain_only",
+    "evidence_types": [
+      "service_handoff"
+    ],
+    "max_hops": 2
+  },
+  "unique_path_ids": true,
+  "timing": {
+    "stage2_s": 4.5,
+    "stage3_3b_s": 41.9,
+    "stage4_s": 3.8,
+    "f1_inference_s": 8.7,
+    "handoff_s": 33.3,
+    "f2_first_10_records_s": 0.066,
+    "f2_all_1499_untraced_runs_s": [
+      8.93,
+      8.02,
+      7.21
+    ],
+    "f2_all_1499_untraced_median_s": 8.02
+  },
+  "memory": {
+    "process_peak_working_set_mb_before_f2_memory_pass": 809.3,
+    "process_peak_working_set_mb_after": 861.5,
+    "python_heap_peak_during_f2_mb": 33.28
+  },
+  "scientific_note": "potential_lateral_movement_supported means a verified, directed, time-consistent cross-host progression containing a process-lineage pivot exists in an F1-suspicious scenario; it can still be ordinary administration. cross_host_service_chain_only is informational (ordinary application-service behaviour). no_supporting_path means no qualifying path within the available scenario evidence, not proof that movement did not occur. These counts are not detection accuracy: no independent lateral-movement ground truth exists.",
+  "relationship_presence_vs_assessment": {
+    "host_to_host -> cross_host_service_chain_only": 7,
+    "host_to_host -> insufficient_evidence": 2,
+    "host_to_host -> no_supporting_path": 151,
+    "host_to_host -> potential_lateral_movement_supported": 4,
+    "host_to_host+iot_host -> cross_host_service_chain_only": 16,
+    "host_to_host+iot_host -> potential_lateral_movement_supported": 137,
+    "no_host_to_host -> insufficient_evidence": 106,
+    "no_host_to_host -> no_supporting_path": 804,
+    "no_host_to_host+iot_host -> no_supporting_path": 272
+  },
+  "example_checks": {
+    "potential_movement_process_lineage": {
+      "scenario_id": 645,
+      "assessment": "potential_lateral_movement_supported",
+      "reason_code": "verified_cross_host_progression",
+      "flags": [],
+      "evidence_types": [
+        "process_lineage"
+      ],
+      "events_exist_with_original_timestamps": true
+    },
+    "potential_movement_both_patterns_36595": {
+      "scenario_id": 36595,
+      "assessment": "potential_lateral_movement_supported",
+      "reason_code": "verified_cross_host_progression",
+      "flags": [],
+      "evidence_types": [
+        "process_lineage",
+        "service_handoff"
+      ],
+      "events_exist_with_original_timestamps": true
+    },
+    "service_chain_only_single_hop": {
+      "scenario_id": 14458,
+      "assessment": "cross_host_service_chain_only",
+      "reason_code": "verified_service_chain_without_process_lineage",
+      "flags": [],
+      "evidence_types": [
+        "service_handoff"
+      ],
+      "events_exist_with_original_timestamps": true
+    },
+    "service_chain_only_two_hop_22761": {
+      "scenario_id": 22761,
+      "assessment": "cross_host_service_chain_only",
+      "reason_code": "verified_service_chain_without_process_lineage",
+      "flags": [],
+      "evidence_types": [
+        "service_handoff"
+      ],
+      "events_exist_with_original_timestamps": true
+    },
+    "no_path_host_to_host_without_pivot": {
+      "scenario_id": 534,
+      "assessment": "no_supporting_path",
+      "reason_code": "host_to_host_without_pivot_context",
+      "flags": [],
+      "evidence_types": [],
+      "events_exist_with_original_timestamps": true
+    },
+    "no_path_destination_side_activity_flagged": {
+      "scenario_id": 1288,
+      "assessment": "no_supporting_path",
+      "reason_code": "host_to_host_without_pivot_context",
+      "flags": [
+        "destination_side_activity_incomplete_predecessor"
+      ],
+      "evidence_types": [],
+      "events_exist_with_original_timestamps": true
+    },
+    "no_path_single_host": {
+      "scenario_id": 1168,
+      "assessment": "no_supporting_path",
+      "reason_code": "no_cross_host_communication",
+      "flags": [],
+      "evidence_types": [],
+      "events_exist_with_original_timestamps": true
+    },
+    "insufficient_two_event_with_host_to_host_link": {
+      "scenario_id": 4370,
+      "assessment": "insufficient_evidence",
+      "reason_code": "fewer_than_3_events",
+      "flags": [],
+      "evidence_types": [],
+      "events_exist_with_original_timestamps": true
+    }
+  }
+}

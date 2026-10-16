@@ -1,0 +1,511 @@
+[
+  {
+    "scenario_id": 56298,
+    "f1": {
+      "anomaly_score": 4.620902065709859,
+      "threshold": 2.5825197985552437,
+      "prediction": "Suspicious",
+      "method": "knn_embedding",
+      "k": 5,
+      "model": "R-GCN-GAE",
+      "checkpoint_epoch": 40
+    },
+    "model_signals": {
+      "graph_errors": {
+        "recon_total": 0.05996221552292506,
+        "node_mean": 0.053028978407382965,
+        "node_max": 0.13766175508499146,
+        "edge_mean": 0.006933237115542094,
+        "edge_max": 0.010117732919752598
+      },
+      "note": "reconstruction errors are model output, not confirmed security evidence"
+    },
+    "nodes": [
+      {
+        "local_index": 0,
+        "node": "iot:55997",
+        "kind": "iot",
+        "row": 55997,
+        "timestamp": "03/11/2019 07:28:38",
+        "ts_s": 1572766118,
+        "host_ip": "10.20.1.22",
+        "model_node_error": 0.1376617551
+      },
+      {
+        "local_index": 1,
+        "node": "host:130767",
+        "kind": "host",
+        "row": 130767,
+        "timestamp": "03/11/2019 07:28:40",
+        "ts_s": 1572766120,
+        "host_ip": "10.20.1.22",
+        "model_node_error": 0.0287216585
+      },
+      {
+        "local_index": 2,
+        "node": "host:130768",
+        "kind": "host",
+        "row": 130768,
+        "timestamp": "03/11/2019 07:28:55",
+        "ts_s": 1572766135,
+        "host_ip": "10.20.2.11",
+        "model_node_error": 0.009157896
+      },
+      {
+        "local_index": 3,
+        "node": "host:130769",
+        "kind": "host",
+        "row": 130769,
+        "timestamp": "03/11/2019 07:28:55",
+        "ts_s": 1572766135,
+        "host_ip": "10.20.1.22",
+        "model_node_error": 0.0365746059
+      }
+    ],
+    "host_events": [
+      {
+        "local_index": 1,
+        "timestamp": "03/11/2019 07:28:40",
+        "host_id": "app-node-01",
+        "host_ip": "10.20.1.22",
+        "process_id": 2023,
+        "parent_process_id": 2021,
+        "process_name": "python3",
+        "event_type": "network_accept",
+        "trace_mode": "light",
+        "trace_source": "xdp",
+        "src_ip": "10.30.4.41",
+        "dst_ip": "10.20.1.22",
+        "src_port": "34557",
+        "dst_port": "502",
+        "protocol": "TCP",
+        "syscall_name": "accept",
+        "syscall_result": "success",
+        "process_state": "sleeping",
+        "memory_alloc_bytes": "0",
+        "file_operation": "-",
+        "threat_confidence_score": "0.3128",
+        "threat_state": "normal",
+        "cpu_usage": "10.1",
+        "disk_read_bytes": "0",
+        "disk_write_bytes": "0",
+        "row": 130767
+      },
+      {
+        "local_index": 2,
+        "timestamp": "03/11/2019 07:28:55",
+        "host_id": "db-core-01",
+        "host_ip": "10.20.2.11",
+        "process_id": 2030,
+        "parent_process_id": 2024,
+        "process_name": "postgres",
+        "event_type": "network_accept",
+        "trace_mode": "light",
+        "trace_source": "xdp",
+        "src_ip": "10.20.1.22",
+        "dst_ip": "10.20.2.11",
+        "src_port": "57208",
+        "dst_port": "5432",
+        "protocol": "TCP",
+        "syscall_name": "accept",
+        "syscall_result": "success",
+        "process_state": "sleeping",
+        "memory_alloc_bytes": "0",
+        "file_operation": "-",
+        "threat_confidence_score": "0.2864",
+        "threat_state": "normal",
+        "cpu_usage": "19.5",
+        "disk_read_bytes": "0",
+        "disk_write_bytes": "0",
+        "row": 130768
+      },
+      {
+        "local_index": 3,
+        "timestamp": "03/11/2019 07:28:55",
+        "host_id": "app-node-01",
+        "host_ip": "10.20.1.22",
+        "process_id": 2023,
+        "parent_process_id": 2021,
+        "process_name": "python3",
+        "event_type": "network_connect",
+        "trace_mode": "light",
+        "trace_source": "xdp",
+        "src_ip": "10.20.1.22",
+        "dst_ip": "10.20.2.11",
+        "src_port": "57208",
+        "dst_port": "5432",
+        "protocol": "TCP",
+        "syscall_name": "connect",
+        "syscall_result": "success",
+        "process_state": "running",
+        "memory_alloc_bytes": "0",
+        "file_operation": "-",
+        "threat_confidence_score": "0.1003",
+        "threat_state": "normal",
+        "cpu_usage": "15.73",
+        "disk_read_bytes": "0",
+        "disk_write_bytes": "0",
+        "row": 130769
+      }
+    ],
+    "iot_events": [
+      {
+        "local_index": 0,
+        "timestamp": "03/11/2019 07:28:38",
+        "iot_device_id": "hvac-controller-01",
+        "src_ip": "10.30.4.41",
+        "dst_ip": "10.20.1.22",
+        "src_port": "34557",
+        "dst_port": "502",
+        "protocol": "TCP",
+        "service": "Modbus/TCP",
+        "flow_duration": "2.2664",
+        "src_bytes": "110",
+        "dst_bytes": "146",
+        "src_packets": "1",
+        "dst_packets": "1",
+        "iat_mean": "2.49676",
+        "iat_std": "1.05979",
+        "packet_size_mean": "128.0",
+        "packet_size_std": "57.13",
+        "connection_rate": "1.0",
+        "confidence_score": "0.7042",
+        "predicted_class": "attack",
+        "row": 55997
+      }
+    ],
+    "edges": [
+      {
+        "edge_index": 0,
+        "local_a": 0,
+        "local_b": 1,
+        "node_a": "iot:55997",
+        "node_b": "host:130767",
+        "relation": "iot_host_match",
+        "e_score": 5.0,
+        "min_gap_sec": 2.0,
+        "same_host": 1,
+        "short_gap": 1,
+        "model_edge_error_forward": 0.0059535606,
+        "model_edge_error_reverse": 0.0053177709,
+        "model_edge_error_mean": 0.0056356657
+      },
+      {
+        "edge_index": 1,
+        "local_a": 1,
+        "local_b": 3,
+        "node_a": "host:130767",
+        "node_b": "host:130769",
+        "relation": "service_handoff",
+        "e_score": 4.0,
+        "min_gap_sec": 15.0,
+        "same_host": 1,
+        "short_gap": 1,
+        "model_edge_error_forward": 0.0101177329,
+        "model_edge_error_reverse": 0.0059098885,
+        "model_edge_error_mean": 0.008013811
+      },
+      {
+        "edge_index": 2,
+        "local_a": 2,
+        "local_b": 3,
+        "node_a": "host:130768",
+        "node_b": "host:130769",
+        "relation": "connect_accept",
+        "e_score": 4.0,
+        "min_gap_sec": 0.0,
+        "same_host": 0,
+        "short_gap": 1,
+        "model_edge_error_forward": 0.006788136,
+        "model_edge_error_reverse": 0.0075123324,
+        "model_edge_error_mean": 0.0071502342
+      }
+    ],
+    "evidence": [
+      {
+        "scenario_id": 56298,
+        "edge_index": 0,
+        "local_a": 0,
+        "local_b": 1,
+        "node_a": "iot:55997",
+        "node_b": "host:130767",
+        "link_type": "iot_host_match",
+        "points": 3,
+        "gap_sec": 2.0
+      },
+      {
+        "scenario_id": 56298,
+        "edge_index": 2,
+        "local_a": 2,
+        "local_b": 3,
+        "node_a": "host:130769",
+        "node_b": "host:130768",
+        "link_type": "connect_accept",
+        "points": 3,
+        "gap_sec": 0.0
+      },
+      {
+        "scenario_id": 56298,
+        "edge_index": 1,
+        "local_a": 1,
+        "local_b": 3,
+        "node_a": "host:130767",
+        "node_b": "host:130769",
+        "link_type": "service_handoff",
+        "points": 2,
+        "gap_sec": 15.0
+      }
+    ],
+    "observed": {
+      "n_events": 4,
+      "n_host_events": 3,
+      "n_iot_flows": 1,
+      "n_edges": 3,
+      "relation_counts": {
+        "iot_host_match": 1,
+        "service_handoff": 1,
+        "connect_accept": 1
+      },
+      "host_ips_of_events": [
+        "10.20.1.22",
+        "10.20.2.11"
+      ],
+      "host_ids": [
+        "app-node-01",
+        "db-core-01"
+      ],
+      "iot_devices": [
+        "hvac-controller-01"
+      ],
+      "iot_host_link_present": true,
+      "host_to_host_link_present": true,
+      "first_timestamp": "03/11/2019 07:28:38",
+      "last_timestamp": "03/11/2019 07:28:55"
+    },
+    "component_columns": {
+      "host": [
+        "trace_mode",
+        "threat_confidence_score",
+        "threat_state"
+      ],
+      "iot": [
+        "confidence_score",
+        "predicted_class"
+      ]
+    },
+    "assessment": {
+      "lateral_movement": "not_assessed",
+      "note": "Function 2 has not been applied; scores and reconstruction errors are not proof of lateral movement."
+    },
+    "integrity_problems": [],
+    "field_provenance": {
+      "scenario_id": "identifier",
+      "local_index": "identifier",
+      "node": "identifier",
+      "row": "identifier",
+      "timestamp": "observed_telemetry",
+      "ts_s": "observed_telemetry",
+      "host_events / iot_events (all columns)": "observed_telemetry",
+      "host_events component columns": "component_output (Component 1 prediction, not raw telemetry)",
+      "iot_events component columns": "component_output (Component 2 prediction, not raw telemetry)",
+      "edges.local_a / local_b / node_a / node_b": "identifier",
+      "edges.relation": "rule_derived_relationship (Stage 4 one-hot of the Stage 3/3b link type)",
+      "evidence.link_type / points / gap_sec": "rule_derived_relationship (Stage 3 / 3b rule output)",
+      "nodes.host_ip": "identifier (for an IoT flow: the managed host at one end of the flow, as derived in Stage 3b / 4)",
+      "edges.same_host / short_gap / e_score / min_gap_sec": "rule_derived_relationship (Stage 4 edge attributes, unscaled with the saved scaler)",
+      "f1.anomaly_score / threshold / prediction": "model_signal",
+      "nodes.model_node_error / edges.model_edge_error_*": "model_signal (reconstruction error; not security evidence)",
+      "model_signals.graph_errors": "model_signal",
+      "assessment": "none (Function 2 has not run; no lateral-movement finding is made here)"
+    }
+  },
+  {
+    "scenario_id": 54317,
+    "f1": {
+      "anomaly_score": 8.244760511494787,
+      "threshold": 2.5825197985552437,
+      "prediction": "Suspicious",
+      "method": "knn_embedding",
+      "k": 5,
+      "model": "R-GCN-GAE",
+      "checkpoint_epoch": 40
+    },
+    "model_signals": {
+      "graph_errors": {
+        "recon_total": 0.18766191601753235,
+        "node_mean": 0.1183152049779892,
+        "node_max": 0.2233642190694809,
+        "edge_mean": 0.06934671103954315,
+        "edge_max": 0.07246227562427521
+      },
+      "note": "reconstruction errors are model output, not confirmed security evidence"
+    },
+    "nodes": [
+      {
+        "local_index": 0,
+        "node": "host:126188",
+        "kind": "host",
+        "row": 126188,
+        "timestamp": "23/10/2019 17:35:31",
+        "ts_s": 1571852131,
+        "host_ip": "10.20.1.11",
+        "model_node_error": 0.0132661983
+      },
+      {
+        "local_index": 1,
+        "node": "host:126192",
+        "kind": "host",
+        "row": 126192,
+        "timestamp": "23/10/2019 17:48:10",
+        "ts_s": 1571852890,
+        "host_ip": "10.20.1.11",
+        "model_node_error": 0.2233642191
+      }
+    ],
+    "host_events": [
+      {
+        "local_index": 0,
+        "timestamp": "23/10/2019 17:35:31",
+        "host_id": "web-edge-01",
+        "host_ip": "10.20.1.11",
+        "process_id": 2005,
+        "parent_process_id": 2000,
+        "process_name": "nginx",
+        "event_type": "network_accept",
+        "trace_mode": "light",
+        "trace_source": "xdp",
+        "src_ip": "203.0.113.3",
+        "dst_ip": "10.20.1.11",
+        "src_port": "6408",
+        "dst_port": "443",
+        "protocol": "TCP",
+        "syscall_name": "accept",
+        "syscall_result": "success",
+        "process_state": "running",
+        "memory_alloc_bytes": "0",
+        "file_operation": "-",
+        "threat_confidence_score": "0.0413",
+        "threat_state": "normal",
+        "cpu_usage": "11.6",
+        "disk_read_bytes": "0",
+        "disk_write_bytes": "0",
+        "row": 126188
+      },
+      {
+        "local_index": 1,
+        "timestamp": "23/10/2019 17:48:10",
+        "host_id": "web-edge-01",
+        "host_ip": "10.20.1.11",
+        "process_id": 2005,
+        "parent_process_id": 2000,
+        "process_name": "nginx",
+        "event_type": "network_accept",
+        "trace_mode": "deep",
+        "trace_source": "uretprobe",
+        "src_ip": "203.0.113.3",
+        "dst_ip": "10.20.1.11",
+        "src_port": "24968",
+        "dst_port": "443",
+        "protocol": "TCP",
+        "syscall_name": "accept",
+        "syscall_result": "success",
+        "process_state": "running",
+        "memory_alloc_bytes": "0",
+        "file_operation": "-",
+        "threat_confidence_score": "0.837",
+        "threat_state": "suspicious",
+        "cpu_usage": "61.17",
+        "disk_read_bytes": "0",
+        "disk_write_bytes": "0",
+        "row": 126192
+      }
+    ],
+    "iot_events": [],
+    "edges": [
+      {
+        "edge_index": 0,
+        "local_a": 0,
+        "local_b": 1,
+        "node_a": "host:126188",
+        "node_b": "host:126192",
+        "relation": "same_remote_source",
+        "e_score": 3.0,
+        "min_gap_sec": 759.0,
+        "same_host": 1,
+        "short_gap": 0,
+        "model_edge_error_forward": 0.066231139,
+        "model_edge_error_reverse": 0.0724622756,
+        "model_edge_error_mean": 0.069346711
+      }
+    ],
+    "evidence": [
+      {
+        "scenario_id": 54317,
+        "edge_index": 0,
+        "local_a": 0,
+        "local_b": 1,
+        "node_a": "host:126188",
+        "node_b": "host:126192",
+        "link_type": "same_remote_source",
+        "points": 2,
+        "gap_sec": 759.0
+      }
+    ],
+    "observed": {
+      "n_events": 2,
+      "n_host_events": 2,
+      "n_iot_flows": 0,
+      "n_edges": 1,
+      "relation_counts": {
+        "same_remote_source": 1
+      },
+      "host_ips_of_events": [
+        "10.20.1.11"
+      ],
+      "host_ids": [
+        "web-edge-01"
+      ],
+      "iot_devices": [],
+      "iot_host_link_present": false,
+      "host_to_host_link_present": false,
+      "first_timestamp": "23/10/2019 17:35:31",
+      "last_timestamp": "23/10/2019 17:48:10"
+    },
+    "component_columns": {
+      "host": [
+        "trace_mode",
+        "threat_confidence_score",
+        "threat_state"
+      ],
+      "iot": [
+        "confidence_score",
+        "predicted_class"
+      ]
+    },
+    "assessment": {
+      "lateral_movement": "not_assessed",
+      "note": "Function 2 has not been applied; scores and reconstruction errors are not proof of lateral movement."
+    },
+    "integrity_problems": [],
+    "field_provenance": {
+      "scenario_id": "identifier",
+      "local_index": "identifier",
+      "node": "identifier",
+      "row": "identifier",
+      "timestamp": "observed_telemetry",
+      "ts_s": "observed_telemetry",
+      "host_events / iot_events (all columns)": "observed_telemetry",
+      "host_events component columns": "component_output (Component 1 prediction, not raw telemetry)",
+      "iot_events component columns": "component_output (Component 2 prediction, not raw telemetry)",
+      "edges.local_a / local_b / node_a / node_b": "identifier",
+      "edges.relation": "rule_derived_relationship (Stage 4 one-hot of the Stage 3/3b link type)",
+      "evidence.link_type / points / gap_sec": "rule_derived_relationship (Stage 3 / 3b rule output)",
+      "nodes.host_ip": "identifier (for an IoT flow: the managed host at one end of the flow, as derived in Stage 3b / 4)",
+      "edges.same_host / short_gap / e_score / min_gap_sec": "rule_derived_relationship (Stage 4 edge attributes, unscaled with the saved scaler)",
+      "f1.anomaly_score / threshold / prediction": "model_signal",
+      "nodes.model_node_error / edges.model_edge_error_*": "model_signal (reconstruction error; not security evidence)",
+      "model_signals.graph_errors": "model_signal",
+      "assessment": "none (Function 2 has not run; no lateral-movement finding is made here)"
+    }
+  }
+]

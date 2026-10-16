@@ -1,0 +1,276 @@
+{
+  "timing": {
+    "stage2_s": 8.9,
+    "stage3_3b_s": 138.3,
+    "stage4_build_s": 8.1
+  },
+  "graphs": 12780,
+  "nodes": 101695,
+  "logical_edges": 92154,
+  "directed_edges": 184308,
+  "report_clean": true,
+  "node_features": 92,
+  "model_features": 84,
+  "edge_features": 14,
+  "relations": 10,
+  "npz": {
+    "train": {
+      "graphs": 8946,
+      "keys_equal": true,
+      "x": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "node_ptr": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "edge_index": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "edge_attr": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "edge_ptr": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "scenario_id": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "scenario_is_attack": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "node_label": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "feature_names": {
+        "equal": true
+      },
+      "feature_groups": {
+        "equal": true
+      },
+      "edge_feature_names": {
+        "equal": true
+      },
+      "graph_order_in_file_ascending_by_scenario_id": true
+    },
+    "validation": {
+      "graphs": 1278,
+      "keys_equal": true,
+      "x": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "node_ptr": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "edge_index": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "edge_attr": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "edge_ptr": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "scenario_id": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "scenario_is_attack": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "node_label": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "feature_names": {
+        "equal": true
+      },
+      "feature_groups": {
+        "equal": true
+      },
+      "edge_feature_names": {
+        "equal": true
+      },
+      "graph_order_in_file_ascending_by_scenario_id": true
+    },
+    "test_normal": {
+      "graphs": 1112,
+      "keys_equal": true,
+      "x": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "node_ptr": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "edge_index": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "edge_attr": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "edge_ptr": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "scenario_id": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "scenario_is_attack": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "node_label": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "feature_names": {
+        "equal": true
+      },
+      "feature_groups": {
+        "equal": true
+      },
+      "edge_feature_names": {
+        "equal": true
+      },
+      "graph_order_in_file_ascending_by_scenario_id": true
+    },
+    "test_attack": {
+      "graphs": 1444,
+      "keys_equal": true,
+      "x": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "node_ptr": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "edge_index": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "edge_attr": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "edge_ptr": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "scenario_id": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "scenario_is_attack": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "node_label": {
+        "dtype_equal": true,
+        "shape_equal": true,
+        "exactly_equal": true,
+        "max_abs_diff": 0.0
+      },
+      "feature_names": {
+        "equal": true
+      },
+      "feature_groups": {
+        "equal": true
+      },
+      "edge_feature_names": {
+        "equal": true
+      },
+      "graph_order_in_file_ascending_by_scenario_id": true
+    }
+  },
+  "buckets_partition_all_graphs": true,
+  "csv_node_membership_and_order_equal": true,
+  "csv_edges": {
+    "rows": 92154,
+    "equal_scenario_and_endpoints": true
+  },
+  "csv_node_features_rounding_tolerance": {
+    "max_abs_diff_scaled": 1.246867051563072e-05,
+    "note": "CSV holds unscaled values rounded to 6 decimals; the NPZ comparison above is exact"
+  }
+}
