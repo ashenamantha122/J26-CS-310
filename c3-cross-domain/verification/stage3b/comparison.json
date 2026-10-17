@@ -1,0 +1,72 @@
+{
+  "seconds": 208.1,
+  "links": {
+    "generated": 99095,
+    "reference": 99095,
+    "expected_99095": true,
+    "types_equal": true,
+    "type_counts": {
+      "connect_accept": 8171,
+      "entry_to_child": 11877,
+      "fallback_accept": 695,
+      "flow_same_dst": 1023,
+      "flow_same_src": 5892,
+      "flow_same_src_dst": 7411,
+      "iot_host_match": 5620,
+      "parent_child": 3286,
+      "same_process": 47488,
+      "same_remote_source": 6413,
+      "service_handoff": 1219
+    },
+    "frame_equal_original_order": true,
+    "bytes_identical": true
+  },
+  "assignments": {
+    "generated": 198360,
+    "reference": 198360,
+    "events_total": 198360,
+    "structural_equal_node_scenario_id": true,
+    "labelled_equal_incl_type": true,
+    "labelled_bytes_identical": true
+  },
+  "summary": {
+    "generated": 12780,
+    "reference": 12780,
+    "structural_columns_equal": true,
+    "labelled_equal_all_columns": true,
+    "labelled_bytes_identical": true,
+    "label_columns_equal_separately": {
+      "n_label1": true,
+      "label1_share": true,
+      "type": true
+    }
+  },
+  "scenarios": {
+    "all_scenarios_incl_single_events": 109445,
+    "single_event": 96665,
+    "with_2plus_events": 12780,
+    "events_in_2plus": 101695,
+    "min_size_2plus": 2,
+    "max_size": 118,
+    "median_size_2plus": 6.0,
+    "size_value_counts_head": {
+      "2": 108,
+      "3": 2287,
+      "4": 1972,
+      "5": 1759,
+      "6": 1679,
+      "7": 732
+    },
+    "scenario_ids_equal_reference": true,
+    "per_node_ids_equal_reference": true,
+    "type_counts": {
+      "normal": 10780,
+      "attack-containing": 2000
+    },
+    "event_coverage_all_events_once": true,
+    "summary_n_events_sum": 101695,
+    "summary_matches_assignment_counts": true,
+    "max_consecutive_gap_inside_scenario_s": 898,
+    "continuity_15min_holds": true
+  }
+}

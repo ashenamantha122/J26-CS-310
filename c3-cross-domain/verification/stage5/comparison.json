@@ -1,0 +1,284 @@
+{
+  "environment": {
+    "torch": "2.14.1+cpu",
+    "cuda": false,
+    "device": "cpu",
+    "numpy": "2.5.3",
+    "threads": 4
+  },
+  "checkpoint": {
+    "sha256": "efc13fee5e56e717a66ec1f89e3077528ba00f2f3097d5d35bc22647178c53d2",
+    "epoch": 40,
+    "kind": "rgcn",
+    "f_in": 84,
+    "e_dim": 14,
+    "relations": 10,
+    "n_parameters": 96515,
+    "training_mode": false
+  },
+  "lock": {
+    "score": "knn_embedding",
+    "k": 5,
+    "threshold": 2.5825197985552437
+  },
+  "reference_embeddings": {
+    "shape": [
+      8946,
+      32
+    ],
+    "dtype": "float64",
+    "finite": true
+  },
+  "tolerance_abs": 1e-05,
+  "validation_npz_vs_saved": {
+    "graphs": 1278,
+    "same_graph_coverage": true,
+    "max_abs_score_diff": 2.7092203014333904e-07,
+    "mean_abs_score_diff": 3.5199379302989747e-09,
+    "scores_within_tolerance": true,
+    "decisions_identical": true,
+    "decision_disagreements": 0,
+    "min_abs_distance_to_threshold": 9.195710859444262e-11,
+    "threshold_distance_exceeds_tolerance": false,
+    "other_score_max_abs_diff": {
+      "recon_total": 1.4305114748314196e-07,
+      "node_mean": 2.980232247096204e-08,
+      "node_max": 1.1920928952302567e-07,
+      "edge_mean": 1.4305114748314196e-07,
+      "edge_max": 1.0728836060680536e-06
+    },
+    "metrics_recomputed": {
+      "accuracy": 0.8403755868544601,
+      "precision": 0.9378109452736318,
+      "recall": 0.6780575539568345,
+      "f1": 0.7870563674321504,
+      "auc": 0.8742252735207956,
+      "fpr": 0.03462603878116344,
+      "tp": 377,
+      "fn": 179,
+      "fp": 25,
+      "tn": 697
+    },
+    "saved_confusion_tn_fp_fn_tp": [
+      697,
+      25,
+      179,
+      377
+    ],
+    "confusion_equal": true,
+    "saved_locked_metrics": {
+      "accuracy": 0.8403755868544601,
+      "precision": 0.9378109452736318,
+      "recall": 0.6780575539568345,
+      "f1": 0.7870563674321504,
+      "auc": 0.8742252735207956,
+      "fpr": 0.03462603878116344
+    },
+    "metrics_match_saved_1e-9": true
+  },
+  "test_npz_vs_saved": {
+    "graphs": 2556,
+    "max_abs_score_diff": 2.8983737365706475e-07,
+    "decisions_identical": true,
+    "labels_in_saved_file_match_npz": true,
+    "recomputed": {
+      "accuracy": 0.7891236306729265,
+      "precision": 0.9511465603190429,
+      "recall": 0.6606648199445984,
+      "f1": 0.7797302819779321,
+      "auc": 0.8620961956196815,
+      "fpr": 0.044064748201438846,
+      "tp": 954,
+      "fn": 490,
+      "fp": 49,
+      "tn": 1063
+    },
+    "saved": {
+      "accuracy": 0.7891236306729265,
+      "precision": 0.9511465603190428,
+      "recall": 0.6606648199445984,
+      "f1": 0.7797302819779321,
+      "auc": 0.8620961956196815,
+      "fpr": 0.0440647482014388,
+      "tp": 954.0,
+      "fn": 490.0,
+      "fp": 49.0,
+      "tn": 1063.0
+    },
+    "metrics_equal_saved_1e-9": true
+  },
+  "pipeline_vs_saved_validation": {
+    "graphs_scored": 12780,
+    "max_abs_score_diff_vs_saved": 2.7092203014333904e-07,
+    "decisions_identical_vs_saved": true,
+    "scores_identical_to_npz_route": true
+  },
+  "pipeline_vs_saved_test": {
+    "max_abs_score_diff_vs_saved": 2.8983737365706475e-07,
+    "decisions_identical_vs_saved": true
+  },
+  "pipeline_prediction_counts": {
+    "Normal": 11281,
+    "Suspicious": 1499
+  },
+  "score_summary": {
+    "count": 12780.0,
+    "mean": 1.5870594988227078,
+    "std": 1.2852248417602177,
+    "min": 0.04999223619342382,
+    "25%": 0.9522825338552156,
+    "50%": 1.3365818658553534,
+    "75%": 1.7652579934052608,
+    "max": 8.244760511494787
+  },
+  "label_free_subset": {
+    "scenario_ids": [
+      6,
+      4713,
+      9479,
+      14272,
+      19200,
+      23738,
+      28673,
+      33533,
+      38287,
+      42832,
+      47502,
+      51984
+    ],
+    "matches_full_run_atol_1e-6": true,
+    "same_decisions": true
+  },
+  "examples_actual_scores": [
+    {
+      "scenario_id": 6,
+      "anomaly_score": 0.684245,
+      "threshold": 2.58252,
+      "prediction": "Normal",
+      "is_suspicious": false,
+      "n_nodes": 29,
+      "n_edges": 38
+    },
+    {
+      "scenario_id": 4713,
+      "anomaly_score": 0.090583,
+      "threshold": 2.58252,
+      "prediction": "Normal",
+      "is_suspicious": false,
+      "n_nodes": 3,
+      "n_edges": 2
+    },
+    {
+      "scenario_id": 9479,
+      "anomaly_score": 0.886575,
+      "threshold": 2.58252,
+      "prediction": "Normal",
+      "is_suspicious": false,
+      "n_nodes": 31,
+      "n_edges": 41
+    },
+    {
+      "scenario_id": 14272,
+      "anomaly_score": 1.4713,
+      "threshold": 2.58252,
+      "prediction": "Normal",
+      "is_suspicious": false,
+      "n_nodes": 7,
+      "n_edges": 6
+    },
+    {
+      "scenario_id": 19200,
+      "anomaly_score": 1.065719,
+      "threshold": 2.58252,
+      "prediction": "Normal",
+      "is_suspicious": false,
+      "n_nodes": 18,
+      "n_edges": 17
+    },
+    {
+      "scenario_id": 23738,
+      "anomaly_score": 0.446156,
+      "threshold": 2.58252,
+      "prediction": "Normal",
+      "is_suspicious": false,
+      "n_nodes": 3,
+      "n_edges": 2
+    },
+    {
+      "scenario_id": 28673,
+      "anomaly_score": 1.481131,
+      "threshold": 2.58252,
+      "prediction": "Normal",
+      "is_suspicious": false,
+      "n_nodes": 5,
+      "n_edges": 4
+    },
+    {
+      "scenario_id": 33533,
+      "anomaly_score": 5.245309,
+      "threshold": 2.58252,
+      "prediction": "Suspicious",
+      "is_suspicious": true,
+      "n_nodes": 9,
+      "n_edges": 8
+    }
+  ],
+  "examples_highest_scores": [
+    {
+      "scenario_id": 54317,
+      "anomaly_score": 8.244761,
+      "threshold": 2.58252,
+      "prediction": "Suspicious",
+      "is_suspicious": true,
+      "n_nodes": 2,
+      "n_edges": 1
+    },
+    {
+      "scenario_id": 19475,
+      "anomaly_score": 7.990716,
+      "threshold": 2.58252,
+      "prediction": "Suspicious",
+      "is_suspicious": true,
+      "n_nodes": 109,
+      "n_edges": 153
+    },
+    {
+      "scenario_id": 34469,
+      "anomaly_score": 7.822612,
+      "threshold": 2.58252,
+      "prediction": "Suspicious",
+      "is_suspicious": true,
+      "n_nodes": 17,
+      "n_edges": 16
+    }
+  ],
+  "example_event_references_top_scenario": [
+    {
+      "node_id": 91364,
+      "node": "host:126188",
+      "scenario_id": 54317,
+      "kind": "host",
+      "row": 126188,
+      "ts_s": 1571852131,
+      "host_ip": "10.20.1.11",
+      "node_error": 0.013265999965369701
+    },
+    {
+      "node_id": 91365,
+      "node": "host:126192",
+      "scenario_id": 54317,
+      "kind": "host",
+      "row": 126192,
+      "ts_s": 1571852890,
+      "host_ip": "10.20.1.11",
+      "node_error": 0.223363995552063
+    }
+  ],
+  "timing": {
+    "load_and_reference_embeddings_s": 2.9,
+    "stage2_s": 3.6,
+    "stage3_3b_s": 46.4,
+    "stage4_s": 3.6,
+    "inference_all_graphs_s": 9.7
+  }
+}

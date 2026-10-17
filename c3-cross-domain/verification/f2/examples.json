@@ -1,0 +1,2302 @@
+{
+  "potential_movement_process_lineage": {
+    "scenario_id": 645,
+    "f1": {
+      "anomaly_score": 5.174806375358923,
+      "threshold": 2.5825197985552437,
+      "prediction": "Suspicious",
+      "method": "knn_embedding",
+      "k": 5,
+      "model": "R-GCN-GAE",
+      "checkpoint_epoch": 40
+    },
+    "assessment": "potential_lateral_movement_supported",
+    "reason_code": "verified_cross_host_progression",
+    "paths": [
+      {
+        "path_id": "F2-645-cbffc7a579",
+        "status": "supported",
+        "qualifies": true,
+        "classification": "process_lineage_progression",
+        "evidence_types": [
+          "process_lineage"
+        ],
+        "n_hops": 1,
+        "pivot_kinds": [
+          "process_lineage"
+        ],
+        "hosts": [
+          {
+            "host_id": "iot-gateway-01",
+            "host_ip": "10.20.3.10"
+          },
+          {
+            "host_id": "db-core-01",
+            "host_ip": "10.20.2.11"
+          }
+        ],
+        "events": [
+          {
+            "event": "host:1448",
+            "local_index": 1,
+            "timestamp": "07/01/2019 05:18:16",
+            "ts_s": 1546838296,
+            "kind": "host",
+            "host_id": "iot-gateway-01",
+            "host_ip": "10.20.3.10",
+            "process_id": 2041,
+            "parent_process_id": 2036,
+            "process_name": "nginx",
+            "event_type": "network_accept",
+            "src_ip": "10.30.5.52",
+            "dst_ip": "10.20.3.10",
+            "src_port": "23434",
+            "dst_port": "443",
+            "protocol": "TCP"
+          },
+          {
+            "event": "host:1449",
+            "local_index": 2,
+            "timestamp": "07/01/2019 05:23:53",
+            "ts_s": 1546838633,
+            "kind": "host",
+            "host_id": "iot-gateway-01",
+            "host_ip": "10.20.3.10",
+            "process_id": 6803,
+            "parent_process_id": 2041,
+            "process_name": "bash",
+            "event_type": "process_start",
+            "src_ip": "-",
+            "dst_ip": "-",
+            "src_port": "",
+            "dst_port": "",
+            "protocol": "-"
+          },
+          {
+            "event": "host:1450",
+            "local_index": 3,
+            "timestamp": "07/01/2019 05:24:46",
+            "ts_s": 1546838686,
+            "kind": "host",
+            "host_id": "iot-gateway-01",
+            "host_ip": "10.20.3.10",
+            "process_id": 6804,
+            "parent_process_id": 6803,
+            "process_name": "ssh",
+            "event_type": "process_start",
+            "src_ip": "-",
+            "dst_ip": "-",
+            "src_port": "",
+            "dst_port": "",
+            "protocol": "-"
+          },
+          {
+            "event": "host:1451",
+            "local_index": 4,
+            "timestamp": "07/01/2019 05:24:47",
+            "ts_s": 1546838687,
+            "kind": "host",
+            "host_id": "iot-gateway-01",
+            "host_ip": "10.20.3.10",
+            "process_id": 6804,
+            "parent_process_id": 6803,
+            "process_name": "ssh",
+            "event_type": "network_connect",
+            "src_ip": "10.20.3.10",
+            "dst_ip": "10.20.2.11",
+            "src_port": "52730",
+            "dst_port": "22",
+            "protocol": "TCP"
+          },
+          {
+            "event": "host:1452",
+            "local_index": 5,
+            "timestamp": "07/01/2019 05:24:48",
+            "ts_s": 1546838688,
+            "kind": "host",
+            "host_id": "db-core-01",
+            "host_ip": "10.20.2.11",
+            "process_id": 2026,
+            "parent_process_id": 1,
+            "process_name": "sshd",
+            "event_type": "network_accept",
+            "src_ip": "10.20.3.10",
+            "dst_ip": "10.20.2.11",
+            "src_port": "52730",
+            "dst_port": "22",
+            "protocol": "TCP"
+          }
+        ],
+        "segments": [
+          {
+            "entry": {
+              "event": "host:1448",
+              "local_index": 1,
+              "timestamp": "07/01/2019 05:18:16",
+              "ts_s": 1546838296,
+              "kind": "host",
+              "host_id": "iot-gateway-01",
+              "host_ip": "10.20.3.10",
+              "process_id": 2041,
+              "parent_process_id": 2036,
+              "process_name": "nginx",
+              "event_type": "network_accept",
+              "src_ip": "10.30.5.52",
+              "dst_ip": "10.20.3.10",
+              "src_port": "23434",
+              "dst_port": "443",
+              "protocol": "TCP"
+            },
+            "entry_context": {
+              "source_class": "iot_flow_matched",
+              "iot_event": "iot:767",
+              "iot_device": "badge-reader-02",
+              "match": "tuple match (direct)",
+              "evidence_ref": {
+                "scenario_id": 645,
+                "edge_index": 0,
+                "node_a": "iot:767",
+                "node_b": "host:1448",
+                "link_type": "iot_host_match",
+                "points": 3,
+                "gap_sec": 13.0
+              },
+              "source_ip": "10.30.5.52"
+            },
+            "pivot_kind": "process_lineage",
+            "pivot_links": [
+              {
+                "link_type": "entry_to_child",
+                "from_event": "host:1448",
+                "to_event": "host:1449",
+                "from_timestamp": "07/01/2019 05:18:16",
+                "to_timestamp": "07/01/2019 05:23:53",
+                "order": "ordered",
+                "check": "accept -> child process started by the accepting process",
+                "evidence_ref": {
+                  "scenario_id": 645,
+                  "edge_index": 1,
+                  "node_a": "host:1448",
+                  "node_b": "host:1449",
+                  "link_type": "entry_to_child",
+                  "points": 2,
+                  "gap_sec": 337.0
+                }
+              },
+              {
+                "link_type": "parent_child",
+                "from_event": "host:1449",
+                "to_event": "host:1450",
+                "from_timestamp": "07/01/2019 05:23:53",
+                "to_timestamp": "07/01/2019 05:24:46",
+                "order": "ordered",
+                "check": "event of parent process -> child process_start",
+                "evidence_ref": {
+                  "scenario_id": 645,
+                  "edge_index": 2,
+                  "node_a": "host:1449",
+                  "node_b": "host:1450",
+                  "link_type": "parent_child",
+                  "points": 2,
+                  "gap_sec": 53.0
+                }
+              },
+              {
+                "link_type": "same_process",
+                "from_event": "host:1450",
+                "to_event": "host:1451",
+                "from_timestamp": "07/01/2019 05:24:46",
+                "to_timestamp": "07/01/2019 05:24:47",
+                "order": "ordered",
+                "check": "consecutive events of the same process",
+                "evidence_ref": {
+                  "scenario_id": 645,
+                  "edge_index": 3,
+                  "node_a": "host:1450",
+                  "node_b": "host:1451",
+                  "link_type": "same_process",
+                  "points": 2,
+                  "gap_sec": 1.0
+                }
+              }
+            ],
+            "connect": {
+              "event": "host:1451",
+              "local_index": 4,
+              "timestamp": "07/01/2019 05:24:47",
+              "ts_s": 1546838687,
+              "kind": "host",
+              "host_id": "iot-gateway-01",
+              "host_ip": "10.20.3.10",
+              "process_id": 6804,
+              "parent_process_id": 6803,
+              "process_name": "ssh",
+              "event_type": "network_connect",
+              "src_ip": "10.20.3.10",
+              "dst_ip": "10.20.2.11",
+              "src_port": "52730",
+              "dst_port": "22",
+              "protocol": "TCP"
+            },
+            "hop": {
+              "link_type": "connect_accept",
+              "connect_event": "host:1451",
+              "accept_event": "host:1452",
+              "source": {
+                "host_id": "iot-gateway-01",
+                "host_ip": "10.20.3.10",
+                "port": "52730"
+              },
+              "destination": {
+                "host_id": "db-core-01",
+                "host_ip": "10.20.2.11",
+                "port": "22"
+              },
+              "protocol": "TCP",
+              "direction": "connect_host -> accept_host (from event fields)",
+              "accept_minus_connect_s": 1,
+              "time_order": "connect_before_accept",
+              "check": "connect on iot-gateway-01 -> accept on db-core-01, identical tuple",
+              "evidence_ref": {
+                "scenario_id": 645,
+                "edge_index": 4,
+                "node_a": "host:1451",
+                "node_b": "host:1452",
+                "link_type": "connect_accept",
+                "points": 3,
+                "gap_sec": 1.0
+              }
+            },
+            "remote_accept": {
+              "event": "host:1452",
+              "local_index": 5,
+              "timestamp": "07/01/2019 05:24:48",
+              "ts_s": 1546838688,
+              "kind": "host",
+              "host_id": "db-core-01",
+              "host_ip": "10.20.2.11",
+              "process_id": 2026,
+              "parent_process_id": 1,
+              "process_name": "sshd",
+              "event_type": "network_accept",
+              "src_ip": "10.20.3.10",
+              "dst_ip": "10.20.2.11",
+              "src_port": "52730",
+              "dst_port": "22",
+              "protocol": "TCP"
+            },
+            "status": "verified",
+            "reasons": []
+          }
+        ],
+        "reasons": []
+      }
+    ],
+    "involved": {
+      "hosts": [
+        {
+          "host_ip": "10.20.2.11",
+          "host_id": "db-core-01"
+        },
+        {
+          "host_ip": "10.20.3.10",
+          "host_id": "iot-gateway-01"
+        }
+      ],
+      "processes": [
+        {
+          "host_id": "db-core-01",
+          "process_id": 2026,
+          "process_name": "sshd"
+        },
+        {
+          "host_id": "iot-gateway-01",
+          "process_id": 2041,
+          "process_name": "nginx"
+        },
+        {
+          "host_id": "iot-gateway-01",
+          "process_id": 6803,
+          "process_name": "bash"
+        },
+        {
+          "host_id": "iot-gateway-01",
+          "process_id": 6804,
+          "process_name": "ssh"
+        }
+      ],
+      "events": {
+        "host:1448": {
+          "timestamp": "07/01/2019 05:18:16",
+          "kind": "host"
+        },
+        "host:1449": {
+          "timestamp": "07/01/2019 05:23:53",
+          "kind": "host"
+        },
+        "host:1450": {
+          "timestamp": "07/01/2019 05:24:46",
+          "kind": "host"
+        },
+        "host:1451": {
+          "timestamp": "07/01/2019 05:24:47",
+          "kind": "host"
+        },
+        "host:1452": {
+          "timestamp": "07/01/2019 05:24:48",
+          "kind": "host"
+        }
+      }
+    },
+    "relationship_summary": {
+      "host_internal_process": 7,
+      "host_to_host": 1,
+      "iot_to_host": 1
+    },
+    "reasoning": [
+      "10 events on 2 host(s); relationships observed: {'host_internal_process': 7, 'host_to_host': 1, 'iot_to_host': 1}; verified host-to-host hops: 1",
+      "1 verified path(s) with a process-lineage pivot; best spans 1 cross-host hop(s) over 2 hosts: iot-gateway-01 -> db-core-01",
+      "pivot evidence types present in this scenario: process_lineage",
+      "each hop's direction comes from the connect/accept event fields; each pivot step was re-verified against process fields and has strictly increasing timestamps"
+    ],
+    "limitations": [
+      "a legitimate service/proxy chain has the same structure (Stage 3b audit); intent is not established",
+      "a process-lineage path can still be ordinary administration (for example SSH hopping)"
+    ],
+    "evidence_problems": [],
+    "search": {
+      "entries_examined": 3,
+      "candidates": 1,
+      "max_candidates": 500,
+      "truncated": false,
+      "host_revisits_rejected": 0,
+      "origin_revisits_rejected": 0,
+      "bounds": {
+        "min_events": 3,
+        "max_pivot_events": 12,
+        "max_hops": 6
+      }
+    },
+    "flags": [],
+    "evidence_types": [
+      "process_lineage"
+    ],
+    "qualifying_path_ids": [
+      "F2-645-cbffc7a579"
+    ],
+    "service_chain_path_ids": [],
+    "assessment_meaning": "a verified, directed, time-consistent cross-host progression with a process-lineage pivot exists in this scenario; potential movement only - intent and maliciousness are not established",
+    "evidence_policy": {
+      "decision_inputs": [
+        "host/IoT telemetry fields",
+        "Stage 3/3b link evidence (re-verified)",
+        "original timestamps"
+      ],
+      "not_used_for_decision": [
+        "anomaly score",
+        "reconstruction errors",
+        "component predictions (C1/C2)",
+        "ground-truth labels"
+      ],
+      "claim": "potential structural cross-host progression only; intent and maliciousness are not established"
+    }
+  },
+  "potential_movement_both_patterns_36595": {
+    "scenario_id": 36595,
+    "f1": {
+      "anomaly_score": 5.479141947945166,
+      "threshold": 2.5825197985552437,
+      "prediction": "Suspicious",
+      "method": "knn_embedding",
+      "k": 5,
+      "model": "R-GCN-GAE",
+      "checkpoint_epoch": 40
+    },
+    "assessment": "potential_lateral_movement_supported",
+    "reason_code": "verified_cross_host_progression",
+    "paths": [
+      {
+        "path_id": "F2-36595-bb5926446b",
+        "status": "supported",
+        "qualifies": true,
+        "classification": "process_lineage_progression",
+        "evidence_types": [
+          "process_lineage"
+        ],
+        "n_hops": 1,
+        "pivot_kinds": [
+          "process_lineage"
+        ],
+        "hosts": [
+          {
+            "host_id": "web-edge-01",
+            "host_ip": "10.20.1.11"
+          },
+          {
+            "host_id": "web-edge-02",
+            "host_ip": "10.20.1.12"
+          }
+        ],
+        "events": [
+          {
+            "event": "host:83952",
+            "local_index": 3,
+            "timestamp": "19/07/2019 20:59:36",
+            "ts_s": 1563569976,
+            "kind": "host",
+            "host_id": "web-edge-01",
+            "host_ip": "10.20.1.11",
+            "process_id": 2001,
+            "parent_process_id": 1,
+            "process_name": "sshd",
+            "event_type": "network_accept",
+            "src_ip": "10.30.5.51",
+            "dst_ip": "10.20.1.11",
+            "src_port": "4148",
+            "dst_port": "22",
+            "protocol": "TCP"
+          },
+          {
+            "event": "host:83957",
+            "local_index": 6,
+            "timestamp": "19/07/2019 21:01:07",
+            "ts_s": 1563570067,
+            "kind": "host",
+            "host_id": "web-edge-01",
+            "host_ip": "10.20.1.11",
+            "process_id": 6723,
+            "parent_process_id": 2001,
+            "process_name": "sshd",
+            "event_type": "process_start",
+            "src_ip": "-",
+            "dst_ip": "-",
+            "src_port": "",
+            "dst_port": "",
+            "protocol": "-"
+          },
+          {
+            "event": "host:83958",
+            "local_index": 7,
+            "timestamp": "19/07/2019 21:01:10",
+            "ts_s": 1563570070,
+            "kind": "host",
+            "host_id": "web-edge-01",
+            "host_ip": "10.20.1.11",
+            "process_id": 6724,
+            "parent_process_id": 6723,
+            "process_name": "bash",
+            "event_type": "process_start",
+            "src_ip": "-",
+            "dst_ip": "-",
+            "src_port": "",
+            "dst_port": "",
+            "protocol": "-"
+          },
+          {
+            "event": "host:83959",
+            "local_index": 8,
+            "timestamp": "19/07/2019 21:02:44",
+            "ts_s": 1563570164,
+            "kind": "host",
+            "host_id": "web-edge-01",
+            "host_ip": "10.20.1.11",
+            "process_id": 6725,
+            "parent_process_id": 6724,
+            "process_name": "ssh",
+            "event_type": "process_start",
+            "src_ip": "-",
+            "dst_ip": "-",
+            "src_port": "",
+            "dst_port": "",
+            "protocol": "-"
+          },
+          {
+            "event": "host:83960",
+            "local_index": 9,
+            "timestamp": "19/07/2019 21:02:47",
+            "ts_s": 1563570167,
+            "kind": "host",
+            "host_id": "web-edge-01",
+            "host_ip": "10.20.1.11",
+            "process_id": 6725,
+            "parent_process_id": 6724,
+            "process_name": "ssh",
+            "event_type": "network_connect",
+            "src_ip": "10.20.1.11",
+            "dst_ip": "10.20.1.12",
+            "src_port": "65273",
+            "dst_port": "22",
+            "protocol": "TCP"
+          },
+          {
+            "event": "host:83961",
+            "local_index": 10,
+            "timestamp": "19/07/2019 21:02:48",
+            "ts_s": 1563570168,
+            "kind": "host",
+            "host_id": "web-edge-02",
+            "host_ip": "10.20.1.12",
+            "process_id": 2007,
+            "parent_process_id": 1,
+            "process_name": "sshd",
+            "event_type": "network_accept",
+            "src_ip": "10.20.1.11",
+            "dst_ip": "10.20.1.12",
+            "src_port": "65273",
+            "dst_port": "22",
+            "protocol": "TCP"
+          }
+        ],
+        "segments": [
+          {
+            "entry": {
+              "event": "host:83952",
+              "local_index": 3,
+              "timestamp": "19/07/2019 20:59:36",
+              "ts_s": 1563569976,
+              "kind": "host",
+              "host_id": "web-edge-01",
+              "host_ip": "10.20.1.11",
+              "process_id": 2001,
+              "parent_process_id": 1,
+              "process_name": "sshd",
+              "event_type": "network_accept",
+              "src_ip": "10.30.5.51",
+              "dst_ip": "10.20.1.11",
+              "src_port": "4148",
+              "dst_port": "22",
+              "protocol": "TCP"
+            },
+            "entry_context": {
+              "source_class": "iot_flow_matched",
+              "iot_event": "iot:36150",
+              "iot_device": "badge-reader-01",
+              "match": "tuple match (direct)",
+              "evidence_ref": {
+                "scenario_id": 36595,
+                "edge_index": 3,
+                "node_a": "iot:36150",
+                "node_b": "host:83952",
+                "link_type": "iot_host_match",
+                "points": 3,
+                "gap_sec": 5.0
+              },
+              "source_ip": "10.30.5.51"
+            },
+            "pivot_kind": "process_lineage",
+            "pivot_links": [
+              {
+                "link_type": "entry_to_child",
+                "from_event": "host:83952",
+                "to_event": "host:83957",
+                "from_timestamp": "19/07/2019 20:59:36",
+                "to_timestamp": "19/07/2019 21:01:07",
+                "order": "ordered",
+                "check": "accept -> child process started by the accepting process",
+                "evidence_ref": {
+                  "scenario_id": 36595,
+                  "edge_index": 4,
+                  "node_a": "host:83952",
+                  "node_b": "host:83957",
+                  "link_type": "entry_to_child",
+                  "points": 2,
+                  "gap_sec": 91.0
+                }
+              },
+              {
+                "link_type": "parent_child",
+                "from_event": "host:83957",
+                "to_event": "host:83958",
+                "from_timestamp": "19/07/2019 21:01:07",
+                "to_timestamp": "19/07/2019 21:01:10",
+                "order": "ordered",
+                "check": "event of parent process -> child process_start",
+                "evidence_ref": {
+                  "scenario_id": 36595,
+                  "edge_index": 6,
+                  "node_a": "host:83957",
+                  "node_b": "host:83958",
+                  "link_type": "parent_child",
+                  "points": 2,
+                  "gap_sec": 3.0
+                }
+              },
+              {
+                "link_type": "parent_child",
+                "from_event": "host:83958",
+                "to_event": "host:83959",
+                "from_timestamp": "19/07/2019 21:01:10",
+                "to_timestamp": "19/07/2019 21:02:44",
+                "order": "ordered",
+                "check": "event of parent process -> child process_start",
+                "evidence_ref": {
+                  "scenario_id": 36595,
+                  "edge_index": 7,
+                  "node_a": "host:83958",
+                  "node_b": "host:83959",
+                  "link_type": "parent_child",
+                  "points": 2,
+                  "gap_sec": 94.0
+                }
+              },
+              {
+                "link_type": "same_process",
+                "from_event": "host:83959",
+                "to_event": "host:83960",
+                "from_timestamp": "19/07/2019 21:02:44",
+                "to_timestamp": "19/07/2019 21:02:47",
+                "order": "ordered",
+                "check": "consecutive events of the same process",
+                "evidence_ref": {
+                  "scenario_id": 36595,
+                  "edge_index": 8,
+                  "node_a": "host:83959",
+                  "node_b": "host:83960",
+                  "link_type": "same_process",
+                  "points": 2,
+                  "gap_sec": 3.0
+                }
+              }
+            ],
+            "connect": {
+              "event": "host:83960",
+              "local_index": 9,
+              "timestamp": "19/07/2019 21:02:47",
+              "ts_s": 1563570167,
+              "kind": "host",
+              "host_id": "web-edge-01",
+              "host_ip": "10.20.1.11",
+              "process_id": 6725,
+              "parent_process_id": 6724,
+              "process_name": "ssh",
+              "event_type": "network_connect",
+              "src_ip": "10.20.1.11",
+              "dst_ip": "10.20.1.12",
+              "src_port": "65273",
+              "dst_port": "22",
+              "protocol": "TCP"
+            },
+            "hop": {
+              "link_type": "connect_accept",
+              "connect_event": "host:83960",
+              "accept_event": "host:83961",
+              "source": {
+                "host_id": "web-edge-01",
+                "host_ip": "10.20.1.11",
+                "port": "65273"
+              },
+              "destination": {
+                "host_id": "web-edge-02",
+                "host_ip": "10.20.1.12",
+                "port": "22"
+              },
+              "protocol": "TCP",
+              "direction": "connect_host -> accept_host (from event fields)",
+              "accept_minus_connect_s": 1,
+              "time_order": "connect_before_accept",
+              "check": "connect on web-edge-01 -> accept on web-edge-02, identical tuple",
+              "evidence_ref": {
+                "scenario_id": 36595,
+                "edge_index": 9,
+                "node_a": "host:83960",
+                "node_b": "host:83961",
+                "link_type": "connect_accept",
+                "points": 3,
+                "gap_sec": 1.0
+              }
+            },
+            "remote_accept": {
+              "event": "host:83961",
+              "local_index": 10,
+              "timestamp": "19/07/2019 21:02:48",
+              "ts_s": 1563570168,
+              "kind": "host",
+              "host_id": "web-edge-02",
+              "host_ip": "10.20.1.12",
+              "process_id": 2007,
+              "parent_process_id": 1,
+              "process_name": "sshd",
+              "event_type": "network_accept",
+              "src_ip": "10.20.1.11",
+              "dst_ip": "10.20.1.12",
+              "src_port": "65273",
+              "dst_port": "22",
+              "protocol": "TCP"
+            },
+            "status": "verified",
+            "reasons": []
+          }
+        ],
+        "reasons": []
+      },
+      {
+        "path_id": "F2-36595-da7a5903ab",
+        "status": "supported",
+        "qualifies": false,
+        "classification": "service_chain_only",
+        "evidence_types": [
+          "service_handoff"
+        ],
+        "n_hops": 1,
+        "pivot_kinds": [
+          "service_handoff"
+        ],
+        "hosts": [
+          {
+            "host_id": "web-edge-01",
+            "host_ip": "10.20.1.11"
+          },
+          {
+            "host_id": "api-node-01",
+            "host_ip": "10.20.1.21"
+          }
+        ],
+        "events": [
+          {
+            "event": "host:83950",
+            "local_index": 1,
+            "timestamp": "19/07/2019 20:55:32",
+            "ts_s": 1563569732,
+            "kind": "host",
+            "host_id": "web-edge-01",
+            "host_ip": "10.20.1.11",
+            "process_id": 2005,
+            "parent_process_id": 2000,
+            "process_name": "nginx",
+            "event_type": "network_accept",
+            "src_ip": "10.30.1.11",
+            "dst_ip": "10.20.1.11",
+            "src_port": "5279",
+            "dst_port": "8443",
+            "protocol": "TCP"
+          },
+          {
+            "event": "host:83953",
+            "local_index": 4,
+            "timestamp": "19/07/2019 21:00:48",
+            "ts_s": 1563570048,
+            "kind": "host",
+            "host_id": "web-edge-01",
+            "host_ip": "10.20.1.11",
+            "process_id": 2005,
+            "parent_process_id": 2000,
+            "process_name": "nginx",
+            "event_type": "network_connect",
+            "src_ip": "10.20.1.11",
+            "dst_ip": "10.20.1.21",
+            "src_port": "44540",
+            "dst_port": "8080",
+            "protocol": "TCP"
+          },
+          {
+            "event": "host:83954",
+            "local_index": 5,
+            "timestamp": "19/07/2019 21:00:49",
+            "ts_s": 1563570049,
+            "kind": "host",
+            "host_id": "api-node-01",
+            "host_ip": "10.20.1.21",
+            "process_id": 2017,
+            "parent_process_id": 2015,
+            "process_name": "node",
+            "event_type": "network_accept",
+            "src_ip": "10.20.1.11",
+            "dst_ip": "10.20.1.21",
+            "src_port": "44540",
+            "dst_port": "8080",
+            "protocol": "TCP"
+          }
+        ],
+        "segments": [
+          {
+            "entry": {
+              "event": "host:83950",
+              "local_index": 1,
+              "timestamp": "19/07/2019 20:55:32",
+              "ts_s": 1563569732,
+              "kind": "host",
+              "host_id": "web-edge-01",
+              "host_ip": "10.20.1.11",
+              "process_id": 2005,
+              "parent_process_id": 2000,
+              "process_name": "nginx",
+              "event_type": "network_accept",
+              "src_ip": "10.30.1.11",
+              "dst_ip": "10.20.1.11",
+              "src_port": "5279",
+              "dst_port": "8443",
+              "protocol": "TCP"
+            },
+            "entry_context": {
+              "source_class": "iot_flow_matched",
+              "iot_event": "iot:36149",
+              "iot_device": "cam-lobby-01",
+              "match": "tuple match (direct)",
+              "evidence_ref": {
+                "scenario_id": 36595,
+                "edge_index": 0,
+                "node_a": "iot:36149",
+                "node_b": "host:83950",
+                "link_type": "iot_host_match",
+                "points": 3,
+                "gap_sec": 16.0
+              },
+              "source_ip": "10.30.1.11"
+            },
+            "pivot_kind": "service_handoff",
+            "pivot_links": [
+              {
+                "link_type": "service_handoff",
+                "from_event": "host:83950",
+                "to_event": "host:83953",
+                "from_timestamp": "19/07/2019 20:55:32",
+                "to_timestamp": "19/07/2019 21:00:48",
+                "order": "ordered",
+                "check": "service process accepts then connects onward",
+                "evidence_ref": {
+                  "scenario_id": 36595,
+                  "edge_index": 2,
+                  "node_a": "host:83950",
+                  "node_b": "host:83953",
+                  "link_type": "service_handoff",
+                  "points": 2,
+                  "gap_sec": 316.0
+                }
+              }
+            ],
+            "connect": {
+              "event": "host:83953",
+              "local_index": 4,
+              "timestamp": "19/07/2019 21:00:48",
+              "ts_s": 1563570048,
+              "kind": "host",
+              "host_id": "web-edge-01",
+              "host_ip": "10.20.1.11",
+              "process_id": 2005,
+              "parent_process_id": 2000,
+              "process_name": "nginx",
+              "event_type": "network_connect",
+              "src_ip": "10.20.1.11",
+              "dst_ip": "10.20.1.21",
+              "src_port": "44540",
+              "dst_port": "8080",
+              "protocol": "TCP"
+            },
+            "hop": {
+              "link_type": "connect_accept",
+              "connect_event": "host:83953",
+              "accept_event": "host:83954",
+              "source": {
+                "host_id": "web-edge-01",
+                "host_ip": "10.20.1.11",
+                "port": "44540"
+              },
+              "destination": {
+                "host_id": "api-node-01",
+                "host_ip": "10.20.1.21",
+                "port": "8080"
+              },
+              "protocol": "TCP",
+              "direction": "connect_host -> accept_host (from event fields)",
+              "accept_minus_connect_s": 1,
+              "time_order": "connect_before_accept",
+              "check": "connect on web-edge-01 -> accept on api-node-01, identical tuple",
+              "evidence_ref": {
+                "scenario_id": 36595,
+                "edge_index": 5,
+                "node_a": "host:83953",
+                "node_b": "host:83954",
+                "link_type": "connect_accept",
+                "points": 3,
+                "gap_sec": 1.0
+              }
+            },
+            "remote_accept": {
+              "event": "host:83954",
+              "local_index": 5,
+              "timestamp": "19/07/2019 21:00:49",
+              "ts_s": 1563570049,
+              "kind": "host",
+              "host_id": "api-node-01",
+              "host_ip": "10.20.1.21",
+              "process_id": 2017,
+              "parent_process_id": 2015,
+              "process_name": "node",
+              "event_type": "network_accept",
+              "src_ip": "10.20.1.11",
+              "dst_ip": "10.20.1.21",
+              "src_port": "44540",
+              "dst_port": "8080",
+              "protocol": "TCP"
+            },
+            "status": "verified",
+            "reasons": []
+          }
+        ],
+        "reasons": []
+      }
+    ],
+    "involved": {
+      "hosts": [
+        {
+          "host_ip": "10.20.1.11",
+          "host_id": "web-edge-01"
+        },
+        {
+          "host_ip": "10.20.1.12",
+          "host_id": "web-edge-02"
+        }
+      ],
+      "processes": [
+        {
+          "host_id": "web-edge-01",
+          "process_id": 2001,
+          "process_name": "sshd"
+        },
+        {
+          "host_id": "web-edge-01",
+          "process_id": 6723,
+          "process_name": "sshd"
+        },
+        {
+          "host_id": "web-edge-01",
+          "process_id": 6724,
+          "process_name": "bash"
+        },
+        {
+          "host_id": "web-edge-01",
+          "process_id": 6725,
+          "process_name": "ssh"
+        },
+        {
+          "host_id": "web-edge-02",
+          "process_id": 2007,
+          "process_name": "sshd"
+        }
+      ],
+      "events": {
+        "host:83952": {
+          "timestamp": "19/07/2019 20:59:36",
+          "kind": "host"
+        },
+        "host:83957": {
+          "timestamp": "19/07/2019 21:01:07",
+          "kind": "host"
+        },
+        "host:83958": {
+          "timestamp": "19/07/2019 21:01:10",
+          "kind": "host"
+        },
+        "host:83959": {
+          "timestamp": "19/07/2019 21:02:44",
+          "kind": "host"
+        },
+        "host:83960": {
+          "timestamp": "19/07/2019 21:02:47",
+          "kind": "host"
+        },
+        "host:83961": {
+          "timestamp": "19/07/2019 21:02:48",
+          "kind": "host"
+        }
+      }
+    },
+    "relationship_summary": {
+      "host_internal_process": 9,
+      "host_to_host": 2,
+      "iot_internal_flow": 1,
+      "iot_to_host": 2
+    },
+    "reasoning": [
+      "15 events on 3 host(s); relationships observed: {'host_internal_process': 9, 'host_to_host': 2, 'iot_internal_flow': 1, 'iot_to_host': 2}; verified host-to-host hops: 2",
+      "1 verified path(s) with a process-lineage pivot; best spans 1 cross-host hop(s) over 2 hosts: web-edge-01 -> web-edge-02",
+      "pivot evidence types present in this scenario: process_lineage, service_handoff",
+      "each hop's direction comes from the connect/accept event fields; each pivot step was re-verified against process fields and has strictly increasing timestamps"
+    ],
+    "limitations": [
+      "a legitimate service/proxy chain has the same structure (Stage 3b audit); intent is not established",
+      "a process-lineage path can still be ordinary administration (for example SSH hopping)",
+      "1 additional verified path(s) rely on service hand-off only (informational)"
+    ],
+    "evidence_problems": [],
+    "search": {
+      "entries_examined": 6,
+      "candidates": 2,
+      "max_candidates": 500,
+      "truncated": false,
+      "host_revisits_rejected": 0,
+      "origin_revisits_rejected": 0,
+      "bounds": {
+        "min_events": 3,
+        "max_pivot_events": 12,
+        "max_hops": 6
+      }
+    },
+    "flags": [],
+    "evidence_types": [
+      "process_lineage",
+      "service_handoff"
+    ],
+    "qualifying_path_ids": [
+      "F2-36595-bb5926446b"
+    ],
+    "service_chain_path_ids": [
+      "F2-36595-da7a5903ab"
+    ],
+    "assessment_meaning": "a verified, directed, time-consistent cross-host progression with a process-lineage pivot exists in this scenario; potential movement only - intent and maliciousness are not established",
+    "evidence_policy": {
+      "decision_inputs": [
+        "host/IoT telemetry fields",
+        "Stage 3/3b link evidence (re-verified)",
+        "original timestamps"
+      ],
+      "not_used_for_decision": [
+        "anomaly score",
+        "reconstruction errors",
+        "component predictions (C1/C2)",
+        "ground-truth labels"
+      ],
+      "claim": "potential structural cross-host progression only; intent and maliciousness are not established"
+    }
+  },
+  "service_chain_only_single_hop": {
+    "scenario_id": 14458,
+    "f1": {
+      "anomaly_score": 4.21241279290374,
+      "threshold": 2.5825197985552437,
+      "prediction": "Suspicious",
+      "method": "knn_embedding",
+      "k": 5,
+      "model": "R-GCN-GAE",
+      "checkpoint_epoch": 40
+    },
+    "assessment": "cross_host_service_chain_only",
+    "reason_code": "verified_service_chain_without_process_lineage",
+    "paths": [
+      {
+        "path_id": "F2-14458-cd21bad7c0",
+        "status": "supported",
+        "qualifies": false,
+        "classification": "service_chain_only",
+        "evidence_types": [
+          "service_handoff"
+        ],
+        "n_hops": 1,
+        "pivot_kinds": [
+          "service_handoff"
+        ],
+        "hosts": [
+          {
+            "host_id": "web-edge-01",
+            "host_ip": "10.20.1.11"
+          },
+          {
+            "host_id": "api-node-01",
+            "host_ip": "10.20.1.21"
+          }
+        ],
+        "events": [
+          {
+            "event": "host:33572",
+            "local_index": 0,
+            "timestamp": "23/03/2019 02:49:12",
+            "ts_s": 1553309352,
+            "kind": "host",
+            "host_id": "web-edge-01",
+            "host_ip": "10.20.1.11",
+            "process_id": 2004,
+            "parent_process_id": 2000,
+            "process_name": "nginx",
+            "event_type": "network_accept",
+            "src_ip": "203.0.113.19",
+            "dst_ip": "10.20.1.11",
+            "src_port": "62705",
+            "dst_port": "443",
+            "protocol": "TCP"
+          },
+          {
+            "event": "host:33574",
+            "local_index": 2,
+            "timestamp": "23/03/2019 02:54:04",
+            "ts_s": 1553309644,
+            "kind": "host",
+            "host_id": "web-edge-01",
+            "host_ip": "10.20.1.11",
+            "process_id": 2004,
+            "parent_process_id": 2000,
+            "process_name": "nginx",
+            "event_type": "network_connect",
+            "src_ip": "10.20.1.11",
+            "dst_ip": "10.20.1.21",
+            "src_port": "29266",
+            "dst_port": "8080",
+            "protocol": "TCP"
+          },
+          {
+            "event": "host:33573",
+            "local_index": 1,
+            "timestamp": "23/03/2019 02:54:04",
+            "ts_s": 1553309644,
+            "kind": "host",
+            "host_id": "api-node-01",
+            "host_ip": "10.20.1.21",
+            "process_id": 2017,
+            "parent_process_id": 2015,
+            "process_name": "node",
+            "event_type": "network_accept",
+            "src_ip": "10.20.1.11",
+            "dst_ip": "10.20.1.21",
+            "src_port": "29266",
+            "dst_port": "8080",
+            "protocol": "TCP"
+          }
+        ],
+        "segments": [
+          {
+            "entry": {
+              "event": "host:33572",
+              "local_index": 0,
+              "timestamp": "23/03/2019 02:49:12",
+              "ts_s": 1553309352,
+              "kind": "host",
+              "host_id": "web-edge-01",
+              "host_ip": "10.20.1.11",
+              "process_id": 2004,
+              "parent_process_id": 2000,
+              "process_name": "nginx",
+              "event_type": "network_accept",
+              "src_ip": "203.0.113.19",
+              "dst_ip": "10.20.1.11",
+              "src_port": "62705",
+              "dst_port": "443",
+              "protocol": "TCP"
+            },
+            "entry_context": {
+              "source_class": "unclassified_source",
+              "source_ip": "203.0.113.19"
+            },
+            "pivot_kind": "service_handoff",
+            "pivot_links": [
+              {
+                "link_type": "service_handoff",
+                "from_event": "host:33572",
+                "to_event": "host:33574",
+                "from_timestamp": "23/03/2019 02:49:12",
+                "to_timestamp": "23/03/2019 02:54:04",
+                "order": "ordered",
+                "check": "service process accepts then connects onward",
+                "evidence_ref": {
+                  "scenario_id": 14458,
+                  "edge_index": 0,
+                  "node_a": "host:33572",
+                  "node_b": "host:33574",
+                  "link_type": "service_handoff",
+                  "points": 2,
+                  "gap_sec": 292.0
+                }
+              }
+            ],
+            "connect": {
+              "event": "host:33574",
+              "local_index": 2,
+              "timestamp": "23/03/2019 02:54:04",
+              "ts_s": 1553309644,
+              "kind": "host",
+              "host_id": "web-edge-01",
+              "host_ip": "10.20.1.11",
+              "process_id": 2004,
+              "parent_process_id": 2000,
+              "process_name": "nginx",
+              "event_type": "network_connect",
+              "src_ip": "10.20.1.11",
+              "dst_ip": "10.20.1.21",
+              "src_port": "29266",
+              "dst_port": "8080",
+              "protocol": "TCP"
+            },
+            "hop": {
+              "link_type": "connect_accept",
+              "connect_event": "host:33574",
+              "accept_event": "host:33573",
+              "source": {
+                "host_id": "web-edge-01",
+                "host_ip": "10.20.1.11",
+                "port": "29266"
+              },
+              "destination": {
+                "host_id": "api-node-01",
+                "host_ip": "10.20.1.21",
+                "port": "8080"
+              },
+              "protocol": "TCP",
+              "direction": "connect_host -> accept_host (from event fields)",
+              "accept_minus_connect_s": 0,
+              "time_order": "same_second (not resolvable at 1 s resolution; direction from fields)",
+              "check": "connect on web-edge-01 -> accept on api-node-01, identical tuple",
+              "evidence_ref": {
+                "scenario_id": 14458,
+                "edge_index": 1,
+                "node_a": "host:33574",
+                "node_b": "host:33573",
+                "link_type": "connect_accept",
+                "points": 3,
+                "gap_sec": 0.0
+              }
+            },
+            "remote_accept": {
+              "event": "host:33573",
+              "local_index": 1,
+              "timestamp": "23/03/2019 02:54:04",
+              "ts_s": 1553309644,
+              "kind": "host",
+              "host_id": "api-node-01",
+              "host_ip": "10.20.1.21",
+              "process_id": 2017,
+              "parent_process_id": 2015,
+              "process_name": "node",
+              "event_type": "network_accept",
+              "src_ip": "10.20.1.11",
+              "dst_ip": "10.20.1.21",
+              "src_port": "29266",
+              "dst_port": "8080",
+              "protocol": "TCP"
+            },
+            "status": "verified",
+            "reasons": []
+          }
+        ],
+        "reasons": []
+      }
+    ],
+    "involved": {
+      "hosts": [
+        {
+          "host_ip": "10.20.1.11",
+          "host_id": "web-edge-01"
+        },
+        {
+          "host_ip": "10.20.1.21",
+          "host_id": "api-node-01"
+        }
+      ],
+      "processes": [
+        {
+          "host_id": "api-node-01",
+          "process_id": 2017,
+          "process_name": "node"
+        },
+        {
+          "host_id": "web-edge-01",
+          "process_id": 2004,
+          "process_name": "nginx"
+        }
+      ],
+      "events": {
+        "host:33572": {
+          "timestamp": "23/03/2019 02:49:12",
+          "kind": "host"
+        },
+        "host:33573": {
+          "timestamp": "23/03/2019 02:54:04",
+          "kind": "host"
+        },
+        "host:33574": {
+          "timestamp": "23/03/2019 02:54:04",
+          "kind": "host"
+        }
+      }
+    },
+    "relationship_summary": {
+      "host_internal_process": 1,
+      "host_to_host": 1
+    },
+    "reasoning": [
+      "3 events on 2 host(s); relationships observed: {'host_internal_process': 1, 'host_to_host': 1}; verified host-to-host hops: 1",
+      "1 verified cross-host chain(s) whose pivots are all service hand-offs (the same long-lived service process accepts, then connects onward): web-edge-01 -> api-node-01",
+      "no process-spawn / lineage evidence accompanies the hand-off, so this is ordinary application-service progression and is reported for information only"
+    ],
+    "limitations": [
+      "a legitimate service/proxy chain has the same structure (Stage 3b audit); intent is not established",
+      "informational: a verified cross-host chain exists, but every pivot is a service hand-off (ordinary application-service behaviour); not potential lateral movement"
+    ],
+    "evidence_problems": [],
+    "search": {
+      "entries_examined": 3,
+      "candidates": 1,
+      "max_candidates": 500,
+      "truncated": false,
+      "host_revisits_rejected": 0,
+      "origin_revisits_rejected": 0,
+      "bounds": {
+        "min_events": 3,
+        "max_pivot_events": 12,
+        "max_hops": 6
+      }
+    },
+    "flags": [],
+    "evidence_types": [
+      "service_handoff"
+    ],
+    "qualifying_path_ids": [],
+    "service_chain_path_ids": [
+      "F2-14458-cd21bad7c0"
+    ],
+    "assessment_meaning": "informational: a verified cross-host chain exists, but every pivot is a service hand-off (ordinary application-service behaviour); not potential lateral movement",
+    "evidence_policy": {
+      "decision_inputs": [
+        "host/IoT telemetry fields",
+        "Stage 3/3b link evidence (re-verified)",
+        "original timestamps"
+      ],
+      "not_used_for_decision": [
+        "anomaly score",
+        "reconstruction errors",
+        "component predictions (C1/C2)",
+        "ground-truth labels"
+      ],
+      "claim": "potential structural cross-host progression only; intent and maliciousness are not established"
+    }
+  },
+  "service_chain_only_two_hop_22761": {
+    "scenario_id": 22761,
+    "f1": {
+      "anomaly_score": 2.8414817237474623,
+      "threshold": 2.5825197985552437,
+      "prediction": "Suspicious",
+      "method": "knn_embedding",
+      "k": 5,
+      "model": "R-GCN-GAE",
+      "checkpoint_epoch": 40
+    },
+    "assessment": "cross_host_service_chain_only",
+    "reason_code": "verified_service_chain_without_process_lineage",
+    "paths": [
+      {
+        "path_id": "F2-22761-edb504beba",
+        "status": "supported",
+        "qualifies": false,
+        "classification": "service_chain_only",
+        "evidence_types": [
+          "service_handoff"
+        ],
+        "n_hops": 2,
+        "pivot_kinds": [
+          "service_handoff",
+          "service_handoff"
+        ],
+        "hosts": [
+          {
+            "host_id": "web-edge-01",
+            "host_ip": "10.20.1.11"
+          },
+          {
+            "host_id": "api-node-01",
+            "host_ip": "10.20.1.21"
+          },
+          {
+            "host_id": "db-core-01",
+            "host_ip": "10.20.2.11"
+          }
+        ],
+        "events": [
+          {
+            "event": "host:52454",
+            "local_index": 0,
+            "timestamp": "05/05/2019 11:01:11",
+            "ts_s": 1557054071,
+            "kind": "host",
+            "host_id": "web-edge-01",
+            "host_ip": "10.20.1.11",
+            "process_id": 2004,
+            "parent_process_id": 2000,
+            "process_name": "nginx",
+            "event_type": "network_accept",
+            "src_ip": "203.0.113.21",
+            "dst_ip": "10.20.1.11",
+            "src_port": "62888",
+            "dst_port": "443",
+            "protocol": "TCP"
+          },
+          {
+            "event": "host:52456",
+            "local_index": 1,
+            "timestamp": "05/05/2019 11:11:00",
+            "ts_s": 1557054660,
+            "kind": "host",
+            "host_id": "web-edge-01",
+            "host_ip": "10.20.1.11",
+            "process_id": 2004,
+            "parent_process_id": 2000,
+            "process_name": "nginx",
+            "event_type": "network_connect",
+            "src_ip": "10.20.1.11",
+            "dst_ip": "10.20.1.21",
+            "src_port": "60071",
+            "dst_port": "8080",
+            "protocol": "TCP"
+          },
+          {
+            "event": "host:52457",
+            "local_index": 2,
+            "timestamp": "05/05/2019 11:11:00",
+            "ts_s": 1557054660,
+            "kind": "host",
+            "host_id": "api-node-01",
+            "host_ip": "10.20.1.21",
+            "process_id": 2017,
+            "parent_process_id": 2015,
+            "process_name": "node",
+            "event_type": "network_accept",
+            "src_ip": "10.20.1.11",
+            "dst_ip": "10.20.1.21",
+            "src_port": "60071",
+            "dst_port": "8080",
+            "protocol": "TCP"
+          },
+          {
+            "event": "host:52469",
+            "local_index": 4,
+            "timestamp": "05/05/2019 11:21:17",
+            "ts_s": 1557055277,
+            "kind": "host",
+            "host_id": "api-node-01",
+            "host_ip": "10.20.1.21",
+            "process_id": 2017,
+            "parent_process_id": 2015,
+            "process_name": "node",
+            "event_type": "network_connect",
+            "src_ip": "10.20.1.21",
+            "dst_ip": "10.20.2.11",
+            "src_port": "18854",
+            "dst_port": "5432",
+            "protocol": "TCP"
+          },
+          {
+            "event": "host:52468",
+            "local_index": 3,
+            "timestamp": "05/05/2019 11:21:17",
+            "ts_s": 1557055277,
+            "kind": "host",
+            "host_id": "db-core-01",
+            "host_ip": "10.20.2.11",
+            "process_id": 2030,
+            "parent_process_id": 2024,
+            "process_name": "postgres",
+            "event_type": "network_accept",
+            "src_ip": "10.20.1.21",
+            "dst_ip": "10.20.2.11",
+            "src_port": "18854",
+            "dst_port": "5432",
+            "protocol": "TCP"
+          }
+        ],
+        "segments": [
+          {
+            "entry": {
+              "event": "host:52454",
+              "local_index": 0,
+              "timestamp": "05/05/2019 11:01:11",
+              "ts_s": 1557054071,
+              "kind": "host",
+              "host_id": "web-edge-01",
+              "host_ip": "10.20.1.11",
+              "process_id": 2004,
+              "parent_process_id": 2000,
+              "process_name": "nginx",
+              "event_type": "network_accept",
+              "src_ip": "203.0.113.21",
+              "dst_ip": "10.20.1.11",
+              "src_port": "62888",
+              "dst_port": "443",
+              "protocol": "TCP"
+            },
+            "entry_context": {
+              "source_class": "unclassified_source",
+              "source_ip": "203.0.113.21"
+            },
+            "pivot_kind": "service_handoff",
+            "pivot_links": [
+              {
+                "link_type": "service_handoff",
+                "from_event": "host:52454",
+                "to_event": "host:52456",
+                "from_timestamp": "05/05/2019 11:01:11",
+                "to_timestamp": "05/05/2019 11:11:00",
+                "order": "ordered",
+                "check": "service process accepts then connects onward",
+                "evidence_ref": {
+                  "scenario_id": 22761,
+                  "edge_index": 0,
+                  "node_a": "host:52454",
+                  "node_b": "host:52456",
+                  "link_type": "service_handoff",
+                  "points": 2,
+                  "gap_sec": 589.0
+                }
+              }
+            ],
+            "connect": {
+              "event": "host:52456",
+              "local_index": 1,
+              "timestamp": "05/05/2019 11:11:00",
+              "ts_s": 1557054660,
+              "kind": "host",
+              "host_id": "web-edge-01",
+              "host_ip": "10.20.1.11",
+              "process_id": 2004,
+              "parent_process_id": 2000,
+              "process_name": "nginx",
+              "event_type": "network_connect",
+              "src_ip": "10.20.1.11",
+              "dst_ip": "10.20.1.21",
+              "src_port": "60071",
+              "dst_port": "8080",
+              "protocol": "TCP"
+            },
+            "hop": {
+              "link_type": "connect_accept",
+              "connect_event": "host:52456",
+              "accept_event": "host:52457",
+              "source": {
+                "host_id": "web-edge-01",
+                "host_ip": "10.20.1.11",
+                "port": "60071"
+              },
+              "destination": {
+                "host_id": "api-node-01",
+                "host_ip": "10.20.1.21",
+                "port": "8080"
+              },
+              "protocol": "TCP",
+              "direction": "connect_host -> accept_host (from event fields)",
+              "accept_minus_connect_s": 0,
+              "time_order": "same_second (not resolvable at 1 s resolution; direction from fields)",
+              "check": "connect on web-edge-01 -> accept on api-node-01, identical tuple",
+              "evidence_ref": {
+                "scenario_id": 22761,
+                "edge_index": 1,
+                "node_a": "host:52456",
+                "node_b": "host:52457",
+                "link_type": "connect_accept",
+                "points": 3,
+                "gap_sec": 0.0
+              }
+            },
+            "remote_accept": {
+              "event": "host:52457",
+              "local_index": 2,
+              "timestamp": "05/05/2019 11:11:00",
+              "ts_s": 1557054660,
+              "kind": "host",
+              "host_id": "api-node-01",
+              "host_ip": "10.20.1.21",
+              "process_id": 2017,
+              "parent_process_id": 2015,
+              "process_name": "node",
+              "event_type": "network_accept",
+              "src_ip": "10.20.1.11",
+              "dst_ip": "10.20.1.21",
+              "src_port": "60071",
+              "dst_port": "8080",
+              "protocol": "TCP"
+            },
+            "status": "verified",
+            "reasons": []
+          },
+          {
+            "entry": {
+              "event": "host:52457",
+              "local_index": 2,
+              "timestamp": "05/05/2019 11:11:00",
+              "ts_s": 1557054660,
+              "kind": "host",
+              "host_id": "api-node-01",
+              "host_ip": "10.20.1.21",
+              "process_id": 2017,
+              "parent_process_id": 2015,
+              "process_name": "node",
+              "event_type": "network_accept",
+              "src_ip": "10.20.1.11",
+              "dst_ip": "10.20.1.21",
+              "src_port": "60071",
+              "dst_port": "8080",
+              "protocol": "TCP"
+            },
+            "entry_context": {
+              "source_class": "host_in_scenario",
+              "source_ip": "10.20.1.11"
+            },
+            "pivot_kind": "service_handoff",
+            "pivot_links": [
+              {
+                "link_type": "service_handoff",
+                "from_event": "host:52457",
+                "to_event": "host:52469",
+                "from_timestamp": "05/05/2019 11:11:00",
+                "to_timestamp": "05/05/2019 11:21:17",
+                "order": "ordered",
+                "check": "service process accepts then connects onward",
+                "evidence_ref": {
+                  "scenario_id": 22761,
+                  "edge_index": 2,
+                  "node_a": "host:52457",
+                  "node_b": "host:52469",
+                  "link_type": "service_handoff",
+                  "points": 2,
+                  "gap_sec": 617.0
+                }
+              }
+            ],
+            "connect": {
+              "event": "host:52469",
+              "local_index": 4,
+              "timestamp": "05/05/2019 11:21:17",
+              "ts_s": 1557055277,
+              "kind": "host",
+              "host_id": "api-node-01",
+              "host_ip": "10.20.1.21",
+              "process_id": 2017,
+              "parent_process_id": 2015,
+              "process_name": "node",
+              "event_type": "network_connect",
+              "src_ip": "10.20.1.21",
+              "dst_ip": "10.20.2.11",
+              "src_port": "18854",
+              "dst_port": "5432",
+              "protocol": "TCP"
+            },
+            "hop": {
+              "link_type": "connect_accept",
+              "connect_event": "host:52469",
+              "accept_event": "host:52468",
+              "source": {
+                "host_id": "api-node-01",
+                "host_ip": "10.20.1.21",
+                "port": "18854"
+              },
+              "destination": {
+                "host_id": "db-core-01",
+                "host_ip": "10.20.2.11",
+                "port": "5432"
+              },
+              "protocol": "TCP",
+              "direction": "connect_host -> accept_host (from event fields)",
+              "accept_minus_connect_s": 0,
+              "time_order": "same_second (not resolvable at 1 s resolution; direction from fields)",
+              "check": "connect on api-node-01 -> accept on db-core-01, identical tuple",
+              "evidence_ref": {
+                "scenario_id": 22761,
+                "edge_index": 3,
+                "node_a": "host:52469",
+                "node_b": "host:52468",
+                "link_type": "connect_accept",
+                "points": 3,
+                "gap_sec": 0.0
+              }
+            },
+            "remote_accept": {
+              "event": "host:52468",
+              "local_index": 3,
+              "timestamp": "05/05/2019 11:21:17",
+              "ts_s": 1557055277,
+              "kind": "host",
+              "host_id": "db-core-01",
+              "host_ip": "10.20.2.11",
+              "process_id": 2030,
+              "parent_process_id": 2024,
+              "process_name": "postgres",
+              "event_type": "network_accept",
+              "src_ip": "10.20.1.21",
+              "dst_ip": "10.20.2.11",
+              "src_port": "18854",
+              "dst_port": "5432",
+              "protocol": "TCP"
+            },
+            "status": "verified",
+            "reasons": []
+          }
+        ],
+        "reasons": []
+      },
+      {
+        "path_id": "F2-22761-872651d39f",
+        "status": "supported",
+        "qualifies": false,
+        "classification": "service_chain_only",
+        "evidence_types": [
+          "service_handoff"
+        ],
+        "n_hops": 1,
+        "pivot_kinds": [
+          "service_handoff"
+        ],
+        "hosts": [
+          {
+            "host_id": "api-node-01",
+            "host_ip": "10.20.1.21"
+          },
+          {
+            "host_id": "db-core-01",
+            "host_ip": "10.20.2.11"
+          }
+        ],
+        "events": [
+          {
+            "event": "host:52472",
+            "local_index": 6,
+            "timestamp": "05/05/2019 11:25:04",
+            "ts_s": 1557055504,
+            "kind": "host",
+            "host_id": "api-node-01",
+            "host_ip": "10.20.1.21",
+            "process_id": 2016,
+            "parent_process_id": 2015,
+            "process_name": "node",
+            "event_type": "network_accept",
+            "src_ip": "10.30.1.13",
+            "dst_ip": "10.20.1.21",
+            "src_port": "27793",
+            "dst_port": "8443",
+            "protocol": "TCP"
+          },
+          {
+            "event": "host:52474",
+            "local_index": 7,
+            "timestamp": "05/05/2019 11:25:09",
+            "ts_s": 1557055509,
+            "kind": "host",
+            "host_id": "api-node-01",
+            "host_ip": "10.20.1.21",
+            "process_id": 2016,
+            "parent_process_id": 2015,
+            "process_name": "node",
+            "event_type": "network_connect",
+            "src_ip": "10.20.1.21",
+            "dst_ip": "10.20.2.11",
+            "src_port": "42891",
+            "dst_port": "3306",
+            "protocol": "TCP"
+          },
+          {
+            "event": "host:52475",
+            "local_index": 8,
+            "timestamp": "05/05/2019 11:25:10",
+            "ts_s": 1557055510,
+            "kind": "host",
+            "host_id": "db-core-01",
+            "host_ip": "10.20.2.11",
+            "process_id": 2025,
+            "parent_process_id": 1,
+            "process_name": "mysqld",
+            "event_type": "network_accept",
+            "src_ip": "10.20.1.21",
+            "dst_ip": "10.20.2.11",
+            "src_port": "42891",
+            "dst_port": "3306",
+            "protocol": "TCP"
+          }
+        ],
+        "segments": [
+          {
+            "entry": {
+              "event": "host:52472",
+              "local_index": 6,
+              "timestamp": "05/05/2019 11:25:04",
+              "ts_s": 1557055504,
+              "kind": "host",
+              "host_id": "api-node-01",
+              "host_ip": "10.20.1.21",
+              "process_id": 2016,
+              "parent_process_id": 2015,
+              "process_name": "node",
+              "event_type": "network_accept",
+              "src_ip": "10.30.1.13",
+              "dst_ip": "10.20.1.21",
+              "src_port": "27793",
+              "dst_port": "8443",
+              "protocol": "TCP"
+            },
+            "entry_context": {
+              "source_class": "iot_flow_matched",
+              "iot_event": "iot:21928",
+              "iot_device": "cam-parking-03",
+              "match": "tuple match (direct)",
+              "evidence_ref": {
+                "scenario_id": 22761,
+                "edge_index": 5,
+                "node_a": "iot:21928",
+                "node_b": "host:52472",
+                "link_type": "iot_host_match",
+                "points": 3,
+                "gap_sec": 23.0
+              },
+              "source_ip": "10.30.1.13"
+            },
+            "pivot_kind": "service_handoff",
+            "pivot_links": [
+              {
+                "link_type": "service_handoff",
+                "from_event": "host:52472",
+                "to_event": "host:52474",
+                "from_timestamp": "05/05/2019 11:25:04",
+                "to_timestamp": "05/05/2019 11:25:09",
+                "order": "ordered",
+                "check": "service process accepts then connects onward",
+                "evidence_ref": {
+                  "scenario_id": 22761,
+                  "edge_index": 6,
+                  "node_a": "host:52472",
+                  "node_b": "host:52474",
+                  "link_type": "service_handoff",
+                  "points": 2,
+                  "gap_sec": 5.0
+                }
+              }
+            ],
+            "connect": {
+              "event": "host:52474",
+              "local_index": 7,
+              "timestamp": "05/05/2019 11:25:09",
+              "ts_s": 1557055509,
+              "kind": "host",
+              "host_id": "api-node-01",
+              "host_ip": "10.20.1.21",
+              "process_id": 2016,
+              "parent_process_id": 2015,
+              "process_name": "node",
+              "event_type": "network_connect",
+              "src_ip": "10.20.1.21",
+              "dst_ip": "10.20.2.11",
+              "src_port": "42891",
+              "dst_port": "3306",
+              "protocol": "TCP"
+            },
+            "hop": {
+              "link_type": "connect_accept",
+              "connect_event": "host:52474",
+              "accept_event": "host:52475",
+              "source": {
+                "host_id": "api-node-01",
+                "host_ip": "10.20.1.21",
+                "port": "42891"
+              },
+              "destination": {
+                "host_id": "db-core-01",
+                "host_ip": "10.20.2.11",
+                "port": "3306"
+              },
+              "protocol": "TCP",
+              "direction": "connect_host -> accept_host (from event fields)",
+              "accept_minus_connect_s": 1,
+              "time_order": "connect_before_accept",
+              "check": "connect on api-node-01 -> accept on db-core-01, identical tuple",
+              "evidence_ref": {
+                "scenario_id": 22761,
+                "edge_index": 7,
+                "node_a": "host:52474",
+                "node_b": "host:52475",
+                "link_type": "connect_accept",
+                "points": 3,
+                "gap_sec": 1.0
+              }
+            },
+            "remote_accept": {
+              "event": "host:52475",
+              "local_index": 8,
+              "timestamp": "05/05/2019 11:25:10",
+              "ts_s": 1557055510,
+              "kind": "host",
+              "host_id": "db-core-01",
+              "host_ip": "10.20.2.11",
+              "process_id": 2025,
+              "parent_process_id": 1,
+              "process_name": "mysqld",
+              "event_type": "network_accept",
+              "src_ip": "10.20.1.21",
+              "dst_ip": "10.20.2.11",
+              "src_port": "42891",
+              "dst_port": "3306",
+              "protocol": "TCP"
+            },
+            "status": "verified",
+            "reasons": []
+          }
+        ],
+        "reasons": []
+      }
+    ],
+    "involved": {
+      "hosts": [
+        {
+          "host_ip": "10.20.1.11",
+          "host_id": "web-edge-01"
+        },
+        {
+          "host_ip": "10.20.1.21",
+          "host_id": "api-node-01"
+        },
+        {
+          "host_ip": "10.20.2.11",
+          "host_id": "db-core-01"
+        }
+      ],
+      "processes": [
+        {
+          "host_id": "api-node-01",
+          "process_id": 2016,
+          "process_name": "node"
+        },
+        {
+          "host_id": "api-node-01",
+          "process_id": 2017,
+          "process_name": "node"
+        },
+        {
+          "host_id": "db-core-01",
+          "process_id": 2025,
+          "process_name": "mysqld"
+        },
+        {
+          "host_id": "db-core-01",
+          "process_id": 2030,
+          "process_name": "postgres"
+        },
+        {
+          "host_id": "web-edge-01",
+          "process_id": 2004,
+          "process_name": "nginx"
+        }
+      ],
+      "events": {
+        "host:52454": {
+          "timestamp": "05/05/2019 11:01:11",
+          "kind": "host"
+        },
+        "host:52456": {
+          "timestamp": "05/05/2019 11:11:00",
+          "kind": "host"
+        },
+        "host:52457": {
+          "timestamp": "05/05/2019 11:11:00",
+          "kind": "host"
+        },
+        "host:52468": {
+          "timestamp": "05/05/2019 11:21:17",
+          "kind": "host"
+        },
+        "host:52469": {
+          "timestamp": "05/05/2019 11:21:17",
+          "kind": "host"
+        },
+        "host:52472": {
+          "timestamp": "05/05/2019 11:25:04",
+          "kind": "host"
+        },
+        "host:52474": {
+          "timestamp": "05/05/2019 11:25:09",
+          "kind": "host"
+        },
+        "host:52475": {
+          "timestamp": "05/05/2019 11:25:10",
+          "kind": "host"
+        }
+      }
+    },
+    "relationship_summary": {
+      "host_internal_process": 3,
+      "host_internal_remote_source": 1,
+      "host_to_host": 3,
+      "iot_to_host": 1
+    },
+    "reasoning": [
+      "9 events on 3 host(s); relationships observed: {'host_internal_process': 3, 'host_internal_remote_source': 1, 'host_to_host': 3, 'iot_to_host': 1}; verified host-to-host hops: 3",
+      "2 verified cross-host chain(s) whose pivots are all service hand-offs (the same long-lived service process accepts, then connects onward): web-edge-01 -> api-node-01 -> db-core-01",
+      "no process-spawn / lineage evidence accompanies the hand-off, so this is ordinary application-service progression and is reported for information only"
+    ],
+    "limitations": [
+      "a legitimate service/proxy chain has the same structure (Stage 3b audit); intent is not established",
+      "informational: a verified cross-host chain exists, but every pivot is a service hand-off (ordinary application-service behaviour); not potential lateral movement"
+    ],
+    "evidence_problems": [],
+    "search": {
+      "entries_examined": 9,
+      "candidates": 4,
+      "max_candidates": 500,
+      "truncated": false,
+      "host_revisits_rejected": 0,
+      "origin_revisits_rejected": 0,
+      "bounds": {
+        "min_events": 3,
+        "max_pivot_events": 12,
+        "max_hops": 6
+      }
+    },
+    "flags": [],
+    "evidence_types": [
+      "service_handoff"
+    ],
+    "qualifying_path_ids": [],
+    "service_chain_path_ids": [
+      "F2-22761-edb504beba",
+      "F2-22761-872651d39f"
+    ],
+    "assessment_meaning": "informational: a verified cross-host chain exists, but every pivot is a service hand-off (ordinary application-service behaviour); not potential lateral movement",
+    "evidence_policy": {
+      "decision_inputs": [
+        "host/IoT telemetry fields",
+        "Stage 3/3b link evidence (re-verified)",
+        "original timestamps"
+      ],
+      "not_used_for_decision": [
+        "anomaly score",
+        "reconstruction errors",
+        "component predictions (C1/C2)",
+        "ground-truth labels"
+      ],
+      "claim": "potential structural cross-host progression only; intent and maliciousness are not established"
+    }
+  },
+  "no_path_host_to_host_without_pivot": {
+    "scenario_id": 534,
+    "f1": {
+      "anomaly_score": 2.688398880063741,
+      "threshold": 2.5825197985552437,
+      "prediction": "Suspicious",
+      "method": "knn_embedding",
+      "k": 5,
+      "model": "R-GCN-GAE",
+      "checkpoint_epoch": 40
+    },
+    "assessment": "no_supporting_path",
+    "reason_code": "host_to_host_without_pivot_context",
+    "paths": [],
+    "involved": {},
+    "relationship_summary": {
+      "host_internal_process": 1,
+      "host_to_host": 1
+    },
+    "reasoning": [
+      "3 events on 2 host(s); relationships observed: {'host_internal_process': 1, 'host_to_host': 1}; verified host-to-host hops: 1",
+      "host-to-host communication is present, but none follows an inbound event through a verified process pivot on the source host; an ordinary connection alone is not movement evidence"
+    ],
+    "limitations": [
+      "host-to-host connection(s) without observed inbound/process context in this scenario: host:1229",
+      "a legitimate service/proxy chain has the same structure (Stage 3b audit); intent is not established",
+      "no qualifying path was found within the available scenario evidence; this is not proof that lateral movement did not occur"
+    ],
+    "evidence_problems": [],
+    "search": {
+      "entries_examined": 1,
+      "candidates": 0,
+      "max_candidates": 500,
+      "truncated": false,
+      "host_revisits_rejected": 0,
+      "origin_revisits_rejected": 0,
+      "bounds": {
+        "min_events": 3,
+        "max_pivot_events": 12,
+        "max_hops": 6
+      }
+    },
+    "flags": [],
+    "evidence_types": [],
+    "qualifying_path_ids": [],
+    "service_chain_path_ids": [],
+    "assessment_meaning": "no qualifying path was found within the available scenario evidence; this is not proof that lateral movement did not occur",
+    "evidence_policy": {
+      "decision_inputs": [
+        "host/IoT telemetry fields",
+        "Stage 3/3b link evidence (re-verified)",
+        "original timestamps"
+      ],
+      "not_used_for_decision": [
+        "anomaly score",
+        "reconstruction errors",
+        "component predictions (C1/C2)",
+        "ground-truth labels"
+      ],
+      "claim": "potential structural cross-host progression only; intent and maliciousness are not established"
+    }
+  },
+  "no_path_destination_side_activity_flagged": {
+    "scenario_id": 1288,
+    "f1": {
+      "anomaly_score": 6.523695033539141,
+      "threshold": 2.5825197985552437,
+      "prediction": "Suspicious",
+      "method": "knn_embedding",
+      "k": 5,
+      "model": "R-GCN-GAE",
+      "checkpoint_epoch": 40
+    },
+    "assessment": "no_supporting_path",
+    "reason_code": "host_to_host_without_pivot_context",
+    "paths": [],
+    "involved": {},
+    "relationship_summary": {
+      "host_internal_process": 2,
+      "host_to_host": 1
+    },
+    "reasoning": [
+      "4 events on 2 host(s); relationships observed: {'host_internal_process': 2, 'host_to_host': 1}; verified host-to-host hops: 1",
+      "host-to-host communication is present, but none follows an inbound event through a verified process pivot on the source host; an ordinary connection alone is not movement evidence"
+    ],
+    "limitations": [
+      "host-to-host connection(s) without observed inbound/process context in this scenario: host:2904",
+      "a legitimate service/proxy chain has the same structure (Stage 3b audit); intent is not established",
+      "no qualifying path was found within the available scenario evidence; this is not proof that lateral movement did not occur",
+      "process activity continues on the accepting host (host:2904 -> ...) but the connecting event has no predecessor in this scenario; the earlier part of a chain may lie outside the scenario. Not treated as a positive finding and nothing is inferred"
+    ],
+    "evidence_problems": [],
+    "search": {
+      "entries_examined": 1,
+      "candidates": 0,
+      "max_candidates": 500,
+      "truncated": false,
+      "host_revisits_rejected": 0,
+      "origin_revisits_rejected": 0,
+      "bounds": {
+        "min_events": 3,
+        "max_pivot_events": 12,
+        "max_hops": 6
+      }
+    },
+    "flags": [
+      "destination_side_activity_incomplete_predecessor"
+    ],
+    "evidence_types": [],
+    "qualifying_path_ids": [],
+    "service_chain_path_ids": [],
+    "assessment_meaning": "no qualifying path was found within the available scenario evidence; this is not proof that lateral movement did not occur",
+    "evidence_policy": {
+      "decision_inputs": [
+        "host/IoT telemetry fields",
+        "Stage 3/3b link evidence (re-verified)",
+        "original timestamps"
+      ],
+      "not_used_for_decision": [
+        "anomaly score",
+        "reconstruction errors",
+        "component predictions (C1/C2)",
+        "ground-truth labels"
+      ],
+      "claim": "potential structural cross-host progression only; intent and maliciousness are not established"
+    }
+  },
+  "no_path_single_host": {
+    "scenario_id": 1168,
+    "f1": {
+      "anomaly_score": 2.729764586086977,
+      "threshold": 2.5825197985552437,
+      "prediction": "Suspicious",
+      "method": "knn_embedding",
+      "k": 5,
+      "model": "R-GCN-GAE",
+      "checkpoint_epoch": 40
+    },
+    "assessment": "no_supporting_path",
+    "reason_code": "no_cross_host_communication",
+    "paths": [],
+    "involved": {},
+    "relationship_summary": {
+      "host_internal_process": 2
+    },
+    "reasoning": [
+      "3 events on 1 host(s); relationships observed: {'host_internal_process': 2}; verified host-to-host hops: 0",
+      "no directed host-to-host communication was observed in the scenario (all events are on a single host)"
+    ],
+    "limitations": [
+      "a legitimate service/proxy chain has the same structure (Stage 3b audit); intent is not established",
+      "no qualifying path was found within the available scenario evidence; this is not proof that lateral movement did not occur"
+    ],
+    "evidence_problems": [],
+    "search": {
+      "entries_examined": 1,
+      "candidates": 0,
+      "max_candidates": 500,
+      "truncated": false,
+      "host_revisits_rejected": 0,
+      "origin_revisits_rejected": 0,
+      "bounds": {
+        "min_events": 3,
+        "max_pivot_events": 12,
+        "max_hops": 6
+      }
+    },
+    "flags": [],
+    "evidence_types": [],
+    "qualifying_path_ids": [],
+    "service_chain_path_ids": [],
+    "assessment_meaning": "no qualifying path was found within the available scenario evidence; this is not proof that lateral movement did not occur",
+    "evidence_policy": {
+      "decision_inputs": [
+        "host/IoT telemetry fields",
+        "Stage 3/3b link evidence (re-verified)",
+        "original timestamps"
+      ],
+      "not_used_for_decision": [
+        "anomaly score",
+        "reconstruction errors",
+        "component predictions (C1/C2)",
+        "ground-truth labels"
+      ],
+      "claim": "potential structural cross-host progression only; intent and maliciousness are not established"
+    }
+  },
+  "insufficient_two_event_with_host_to_host_link": {
+    "scenario_id": 4370,
+    "f1": {
+      "anomaly_score": 2.6438894248909075,
+      "threshold": 2.5825197985552437,
+      "prediction": "Suspicious",
+      "method": "knn_embedding",
+      "k": 5,
+      "model": "R-GCN-GAE",
+      "checkpoint_epoch": 40
+    },
+    "assessment": "insufficient_evidence",
+    "reason_code": "fewer_than_3_events",
+    "paths": [],
+    "involved": {},
+    "relationship_summary": {
+      "host_to_host": 1
+    },
+    "reasoning": [
+      "the scenario has only 2 event(s); a progression needs an inbound event, a pivot and a remote accept (>= 3 events), so no reliable conclusion is possible"
+    ],
+    "limitations": [],
+    "evidence_problems": [],
+    "search": {
+      "entries_examined": 0,
+      "candidates": 0,
+      "max_candidates": 500,
+      "truncated": false,
+      "host_revisits_rejected": 0,
+      "origin_revisits_rejected": 0,
+      "bounds": {
+        "min_events": 3,
+        "max_pivot_events": 12,
+        "max_hops": 6
+      }
+    },
+    "flags": [],
+    "evidence_types": [],
+    "qualifying_path_ids": [],
+    "service_chain_path_ids": [],
+    "assessment_meaning": "the available evidence cannot support a reliable conclusion",
+    "evidence_policy": {
+      "decision_inputs": [
+        "host/IoT telemetry fields",
+        "Stage 3/3b link evidence (re-verified)",
+        "original timestamps"
+      ],
+      "not_used_for_decision": [
+        "anomaly score",
+        "reconstruction errors",
+        "component predictions (C1/C2)",
+        "ground-truth labels"
+      ],
+      "claim": "potential structural cross-host progression only; intent and maliciousness are not established"
+    }
+  }
+}

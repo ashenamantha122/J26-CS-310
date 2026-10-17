@@ -1,0 +1,16 @@
+{
+  "summary": {
+    "scenarios_scored": 12780,
+    "suspicious_handed_to_f2": 1499,
+    "normal_retained_without_f2": 11281,
+    "threshold": 2.5825197985552437
+  },
+  "all_records_f2_ready": true,
+  "records_with_iot_host_match_edge": 425,
+  "records_with_connect_accept_edge": 317,
+  "records_with_both": 153,
+  "events_in_suspicious_scenarios": 16054,
+  "edges_in_suspicious_scenarios": 16348,
+  "evidence_links_in_suspicious_scenarios": 16348,
+  "seconds_total": 118.9
+}
