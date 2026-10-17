@@ -1,0 +1,1 @@
+{"alert_id": "demo-isolate-1", "timestamp_ms": 0, "threat_type": "LATERAL_MOVEMENT", "confidence": 0.95, "asset_id": "10.0.0.2", "asset_type": "IOT_AGENTLESS", "asset_criticality": "HIGH", "source_component": "component3-correlated", "evidence_summary": "demo alert for wiring Decision Engine to real Mininet network"}

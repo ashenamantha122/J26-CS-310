@@ -1,0 +1,5 @@
+{"alert_id": "a1", "timestamp_ms": 1000, "threat_type": "PORT_SCAN", "confidence": 0.15, "asset_id": "10.0.0.3", "asset_type": "IOT_AGENTLESS", "asset_criticality": "LOW", "source_component": "component3-correlated", "evidence_summary": "low-confidence scan, no action"}
+{"alert_id": "a2", "timestamp_ms": 2000, "threat_type": "LATERAL_MOVEMENT", "confidence": 0.91, "asset_id": "10.0.0.19", "asset_type": "IOT_AGENTLESS", "asset_criticality": "HIGH", "source_component": "component3-correlated", "evidence_summary": "GNN flagged IoT_07 -> Host_A -> sshd -> bash -> Host_B"}
+this is not valid json at all
+{"alert_id": "a3", "confidence": 2.0, "threat_type": "DATA_EXFILTRATION", "asset_id": "10.0.0.22", "asset_type": "IOT_AGENTLESS", "asset_criticality": "CRITICAL"}
+{"alert_id": "a4", "timestamp_ms": 4000, "threat_type": "CREDENTIAL_ACCESS", "confidence": 0.85, "asset_id": "host-dc1", "asset_type": "MANAGED_LINUX", "asset_criticality": "CRITICAL", "source_component": "component3-correlated", "evidence_summary": "credential dumping detected on domain controller"}

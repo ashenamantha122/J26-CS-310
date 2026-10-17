@@ -1,0 +1,178 @@
+# Decision Engine rule matrix — Component 4 of LAAX
+#
+# This file IS the artifact you show Prof. Fernando as evidence of a
+# deliberate, inspectable decision layer (your proposal's framing:
+# "deterministic rule-matrix ... deliberately avoids ML for defensibility").
+# Every decision the engine makes must trace back to exactly one row here.
+#
+# Matching key: (threat_type, confidence_band, asset_criticality) -> outcome
+# confidence_band: LOW = [0.0, 0.5), MEDIUM = [0.5, 0.8), HIGH = [0.8, 1.0]
+#
+# level:     NONE | MONITOR | RESTRICT | ISOLATE
+# route_to:  MANAGED_LINUX (eBPF/LSM path) | IOT_AGENTLESS (SDN-only path) | BOTH
+# ttl_seconds: how long the containment holds before auto-rollback fires
+#   (your proposal's "safe rollback" / "time-bounded policy" novelty claim —
+#   this field is what makes that literally true in the running system)
+
+rules:
+  # --- Port scan: usually reconnaissance, not yet an active compromise ---
+  - threat_type: PORT_SCAN
+    confidence_band: LOW
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: NONE
+    ttl_seconds: 0
+  - threat_type: PORT_SCAN
+    confidence_band: MEDIUM
+    asset_criticality: [LOW, MEDIUM]
+    level: MONITOR
+    ttl_seconds: 1800
+  - threat_type: PORT_SCAN
+    confidence_band: MEDIUM
+    asset_criticality: [HIGH, CRITICAL]
+    level: RESTRICT
+    ttl_seconds: 1800
+  - threat_type: PORT_SCAN
+    confidence_band: HIGH
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: RESTRICT
+    ttl_seconds: 3600
+
+  # --- Lateral movement: Component 3's flagship detection, treat seriously ---
+  - threat_type: LATERAL_MOVEMENT
+    confidence_band: LOW
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: MONITOR
+    ttl_seconds: 1800
+  - threat_type: LATERAL_MOVEMENT
+    confidence_band: MEDIUM
+    asset_criticality: [LOW, MEDIUM]
+    level: RESTRICT
+    ttl_seconds: 3600
+  - threat_type: LATERAL_MOVEMENT
+    confidence_band: MEDIUM
+    asset_criticality: [HIGH, CRITICAL]
+    level: ISOLATE
+    ttl_seconds: 3600
+  - threat_type: LATERAL_MOVEMENT
+    confidence_band: HIGH
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: ISOLATE
+    ttl_seconds: 7200
+
+  # --- C2 beaconing: confirmed outbound compromise pattern ---
+  - threat_type: C2_BEACONING
+    confidence_band: LOW
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: MONITOR
+    ttl_seconds: 1800
+  - threat_type: C2_BEACONING
+    confidence_band: MEDIUM
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: RESTRICT
+    ttl_seconds: 3600
+  - threat_type: C2_BEACONING
+    confidence_band: HIGH
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: ISOLATE
+    ttl_seconds: 7200
+
+  # --- Credential access: high stakes even at medium confidence ---
+  - threat_type: CREDENTIAL_ACCESS
+    confidence_band: LOW
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: MONITOR
+    ttl_seconds: 1800
+  - threat_type: CREDENTIAL_ACCESS
+    confidence_band: MEDIUM
+    asset_criticality: [LOW, MEDIUM]
+    level: RESTRICT
+    ttl_seconds: 3600
+  - threat_type: CREDENTIAL_ACCESS
+    confidence_band: MEDIUM
+    asset_criticality: [HIGH, CRITICAL]
+    level: ISOLATE
+    ttl_seconds: 3600
+  - threat_type: CREDENTIAL_ACCESS
+    confidence_band: HIGH
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: ISOLATE
+    ttl_seconds: 7200
+
+  # --- Malware execution: eBPF/LSM path only makes sense on managed Linux ---
+  - threat_type: MALWARE_EXECUTION
+    confidence_band: LOW
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: MONITOR
+    ttl_seconds: 1800
+  - threat_type: MALWARE_EXECUTION
+    confidence_band: MEDIUM
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: RESTRICT
+    ttl_seconds: 3600
+  - threat_type: MALWARE_EXECUTION
+    confidence_band: HIGH
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: ISOLATE
+    ttl_seconds: 7200
+
+  # --- Data exfiltration: confidence rarely matters once it's flagged ---
+  - threat_type: DATA_EXFILTRATION
+    confidence_band: LOW
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: RESTRICT
+    ttl_seconds: 1800
+  - threat_type: DATA_EXFILTRATION
+    confidence_band: MEDIUM
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: ISOLATE
+    ttl_seconds: 3600
+  - threat_type: DATA_EXFILTRATION
+    confidence_band: HIGH
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: ISOLATE
+    ttl_seconds: 7200
+
+  # --- Denial of service: network-layer, SDN path does the real work ---
+  - threat_type: DENIAL_OF_SERVICE
+    confidence_band: LOW
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: MONITOR
+    ttl_seconds: 900
+  - threat_type: DENIAL_OF_SERVICE
+    confidence_band: MEDIUM
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: RESTRICT
+    ttl_seconds: 1800
+  - threat_type: DENIAL_OF_SERVICE
+    confidence_band: HIGH
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: ISOLATE
+    ttl_seconds: 3600
+
+  # --- Unauthorized access ---
+  - threat_type: UNAUTHORIZED_ACCESS
+    confidence_band: LOW
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: MONITOR
+    ttl_seconds: 1800
+  - threat_type: UNAUTHORIZED_ACCESS
+    confidence_band: MEDIUM
+    asset_criticality: [LOW, MEDIUM]
+    level: RESTRICT
+    ttl_seconds: 1800
+  - threat_type: UNAUTHORIZED_ACCESS
+    confidence_band: MEDIUM
+    asset_criticality: [HIGH, CRITICAL]
+    level: ISOLATE
+    ttl_seconds: 3600
+  - threat_type: UNAUTHORIZED_ACCESS
+    confidence_band: HIGH
+    asset_criticality: [LOW, MEDIUM, HIGH, CRITICAL]
+    level: ISOLATE
+    ttl_seconds: 3600
+
+# Fallback when no row matches (should only happen for THREAT_UNKNOWN or a
+# bug in C3's output) — fail safe, don't fail silent, don't fail open.
+default_rule:
+  level: MONITOR
+  ttl_seconds: 900

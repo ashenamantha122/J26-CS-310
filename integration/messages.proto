@@ -1,0 +1,109 @@
+syntax = "proto3";
+package laax.component4;
+
+// ============================================================
+// Contract between Component 3 (GNN correlation engine) -> Component 4
+// This is the schema your stub feed already emulates in JSON.
+// Keep this file the single source of truth; regenerate JSON stub
+// and Python bindings from it so C3's real integration is a drop-in
+// transport swap, not a rewrite.
+// ============================================================
+
+enum ThreatType {
+  THREAT_UNKNOWN            = 0;
+  PORT_SCAN                 = 1;
+  LATERAL_MOVEMENT          = 2;
+  C2_BEACONING              = 3;
+  CREDENTIAL_ACCESS         = 4;
+  MALWARE_EXECUTION         = 5;
+  DATA_EXFILTRATION         = 6;
+  DENIAL_OF_SERVICE         = 7;
+  UNAUTHORIZED_ACCESS       = 8;
+}
+
+enum AssetType {
+  ASSET_UNKNOWN   = 0;
+  MANAGED_LINUX   = 1;   // covered by eBPF/LSM path (Component 1 + Component 4 eBPF enforcer)
+  IOT_AGENTLESS   = 2;   // covered by SDN-only path (Component 2 + Component 4 SDN enforcer)
+}
+
+enum AssetCriticality {
+  CRITICALITY_UNKNOWN = 0;
+  LOW                 = 1;
+  MEDIUM              = 2;
+  HIGH                = 3;
+  CRITICAL            = 4;
+}
+
+// Alert as emitted by Component 3's correlation engine.
+message ThreatAlert {
+  string     alert_id          = 1;   // UUID, used as the rollback/audit key end-to-end
+  int64      timestamp_ms      = 2;
+  ThreatType threat_type       = 3;
+  double     confidence        = 4;   // 0.0 - 1.0, from GNN correlation score
+  string     asset_id          = 5;   // hostname / MAC / IP identifying the target
+  AssetType  asset_type        = 6;
+  AssetCriticality asset_criticality = 7;
+  string     source_component  = 8;   // "component1" | "component2" | "component3-correlated"
+  string     evidence_summary  = 9;   // human-readable, goes straight into the audit log / closure note
+  repeated string related_alert_ids = 10; // for lateral-movement path alerts spanning multiple hosts
+}
+
+// ============================================================
+// Contract between Component 4 -> Component 1 (eBPF/LSM agent)
+// Component 1's own slide commits to "LSM enforcement interface
+// for Component 4" as a sub-objective — this message IS that
+// interface. Share this file with Amantha so both sides build to
+// the same contract instead of guessing at each other's format.
+// ============================================================
+
+enum LsmAction {
+  LSM_NOOP           = 0;
+  DENY_EXEC          = 1;   // block new process execution for the target
+  DENY_NETWORK       = 2;   // block outbound/inbound sockets for the target
+  DENY_FILE_WRITE    = 3;   // block writes outside an allowlist
+  RAISE_TRACE_DEPTH  = 4;   // ask Component 1 to go to deep-mode tracing on this host (no containment, just visibility)
+  ROLLBACK           = 5;   // remove a previously issued restriction
+}
+
+message LsmCommand {
+  string    command_id   = 1;  // UUID, independent of alert_id (one alert can issue several commands)
+  string    alert_id     = 2;  // ties back to the triggering ThreatAlert for audit
+  string    target_host  = 3;
+  LsmAction action       = 4;
+  int32     target_pid   = 5;  // 0 = host-wide, not process-scoped
+  int64     ttl_seconds  = 6;  // time-bounded policy per your proposal's "automated rollback" novelty claim
+}
+
+message LsmCommandAck {
+  string command_id = 1;
+  bool   applied     = 2;
+  string error       = 3;  // empty if applied == true
+  int64  applied_at_ms = 4;
+}
+
+// ============================================================
+// Component 4 internal: Decision Engine -> Enforcers
+// ============================================================
+
+enum ContainmentLevel {
+  LEVEL_NONE       = 0;  // log only, no enforcement — e.g. low confidence
+  LEVEL_MONITOR    = 1;  // raise tracing depth only (maps to LSM RAISE_TRACE_DEPTH)
+  LEVEL_RESTRICT   = 2;  // targeted restriction: one host/process, one rule
+  LEVEL_ISOLATE    = 3;  // full VLAN quarantine / full host network cutoff
+}
+
+message ContainmentDecision {
+  string alert_id            = 1;
+  ContainmentLevel level     = 2;
+  AssetType route_to         = 3;   // which enforcer(s) this decision targets
+  string target_id           = 4;   // host/MAC/IP being acted on
+  int64  ttl_seconds         = 5;
+  string rule_matched        = 6;   // which row of the rule matrix fired — for the audit trail / defense
+}
+
+message RollbackEvent {
+  string alert_id       = 1;
+  string reason         = 2;  // "ttl_expired" | "false_positive_confirmed" | "manual"
+  int64  rolled_back_at_ms = 3;
+}
