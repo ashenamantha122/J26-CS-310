@@ -17,6 +17,7 @@ No component code changes, because components only ever touch Bus.
 from __future__ import annotations
 
 import asyncio
+import hmac
 import json
 from typing import Any, Awaitable, Callable, Dict, List
 
@@ -73,11 +74,25 @@ class InProcBus(Bus):
         await self._queue.join()
 
 
-class TcpBus(Bus):
-    """JSON-lines over TCP. Start one Broker, then one TcpBus per component."""
+class BusAuthError(RuntimeError):
+    pass
 
-    def __init__(self, host: str = "127.0.0.1", port: int = 5599) -> None:
-        self.host, self.port = host, port
+
+class TcpBus(Bus):
+    """
+    JSON-lines over TCP. Start one Broker, then one TcpBus per component.
+
+    Authentication: when the broker is started with a token, every client must
+    present the same token as its first frame or it is disconnected. That is
+    what stops any local user from publishing resp.enforce.host (deny execve
+    for an arbitrary pid) or corr.external (force a process deep). The token
+    authenticates; it does not encrypt. Across hosts, run the bus over TLS or
+    a WireGuard tunnel -- mTLS is the target for the production transport.
+    """
+
+    def __init__(self, host: str = "127.0.0.1", port: int = 5599,
+                 token: str | None = None) -> None:
+        self.host, self.port, self.token = host, port, token
         self._subs: Dict[str, List[Handler]] = {}
         self._writer: asyncio.StreamWriter | None = None
 
@@ -87,6 +102,8 @@ class TcpBus(Bus):
     async def _connect(self) -> None:
         reader, writer = await asyncio.open_connection(self.host, self.port)
         self._writer = writer
+        if self.token:
+            writer.write((json.dumps({"op": "auth", "token": self.token}) + "\n").encode())
         writer.write((json.dumps({"op": "sub", "topics": list(self._subs)}) + "\n").encode())
         await writer.drain()
         self._reader = reader
@@ -106,6 +123,8 @@ class TcpBus(Bus):
             if not line:
                 return
             frame = json.loads(line)
+            if frame.get("op") == "error":
+                raise BusAuthError(frame.get("reason", "broker refused connection"))
             topic, payload = frame["topic"], frame["msg"]
             msg = decode(topic, payload)
             for handler in self._subs.get(topic, []):
@@ -115,11 +134,34 @@ class TcpBus(Bus):
 class Broker:
     """Fan-out server for TcpBus."""
 
-    def __init__(self, host: str = "127.0.0.1", port: int = 5599) -> None:
-        self.host, self.port = host, port
+    def __init__(self, host: str = "127.0.0.1", port: int = 5599,
+                 token: str | None = None) -> None:
+        self.host, self.port, self.token = host, port, token
         self._clients: List[tuple[asyncio.StreamWriter, set]] = []
+        self.rejected = 0
+
+    async def _authenticate(self, reader: asyncio.StreamReader,
+                            writer: asyncio.StreamWriter) -> bool:
+        if not self.token:
+            return True
+        try:
+            line = await asyncio.wait_for(reader.readline(), 5.0)
+            frame = json.loads(line) if line else {}
+        except (asyncio.TimeoutError, json.JSONDecodeError):
+            frame = {}
+        offered = frame.get("token") if frame.get("op") == "auth" else None
+        if isinstance(offered, str) and hmac.compare_digest(
+                offered.encode(), self.token.encode()):
+            return True
+        self.rejected += 1
+        writer.write((json.dumps({"op": "error", "reason": "authentication failed"}) + "\n").encode())
+        await writer.drain()
+        writer.close()
+        return False
 
     async def _client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+        if not await self._authenticate(reader, writer):
+            return
         topics: set = set()
         entry = (writer, topics)
         self._clients.append(entry)

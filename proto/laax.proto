@@ -1,0 +1,134 @@
+// LAAX wire contract, Protocol Buffers v3 (proposal FR5).
+//
+// One message per laax/contracts.py dataclass, with the same field names, so
+// the codec in laax/pbcodec.py maps them generically. Keep the two in step:
+// tests/test_transport.py fails if a dataclass field has no proto field.
+//
+// Regenerate after editing:
+//   protoc --python_out=laax -Iproto proto/laax.proto
+syntax = "proto3";
+
+package laax;
+
+message HostEvent {
+  string msg_id = 1;
+  double ts = 2;
+  string schema = 3;
+  string host_id = 4;
+  int64 pid = 5;
+  int64 ppid = 6;
+  string comm = 7;
+  optional string exe = 8;
+  string kind = 9;
+  string depth = 10;
+  optional string hook = 11;
+  optional string saddr = 12;
+  optional string daddr = 13;
+  optional int32 sport = 14;
+  optional int32 dport = 15;
+  optional string proto = 16;
+  repeated string argv = 17;
+  bool argv_present = 18;        // distinguishes argv=None from argv=[]
+  optional string syscall = 19;
+  optional int64 ret = 20;
+  optional double cpu_pct = 21;
+  optional int64 rss_kb = 22;
+  double rarity = 23;
+  double confidence = 24;
+  string source = 25;
+  optional string label = 26;
+}
+
+message ModeChange {
+  string msg_id = 1;
+  double ts = 2;
+  string schema = 3;
+  string host_id = 4;
+  int64 pid = 5;
+  string comm = 6;
+  string from_mode = 7;
+  string to_mode = 8;
+  double confidence = 9;
+  double threshold = 10;
+  string trigger = 11;
+  double attach_latency_ms = 12;
+  repeated string probes = 13;
+}
+
+message FlowVerdict {
+  string msg_id = 1;
+  double ts = 2;
+  string schema = 3;
+  string device_id = 4;
+  string saddr = 5;
+  string daddr = 6;
+  int32 dport = 7;
+  string proto = 8;
+  double score = 9;
+  string verdict = 10;
+  string feature_set = 11;
+  string model = 12;
+  optional string label = 13;
+}
+
+message CorrelationAlert {
+  string msg_id = 1;
+  double ts = 2;
+  string schema = 3;
+  string alert_id = 4;
+  string severity = 5;
+  double confidence = 6;
+  string path_json = 7;          // list of graph-node dicts, JSON-encoded
+  optional string iot_device = 8;
+  optional string host_id = 9;
+  optional int64 pid = 10;
+  string technique = 11;
+  string explanation = 12;
+}
+
+message ExternalAlert {
+  string msg_id = 1;
+  double ts = 2;
+  string schema = 3;
+  string host_id = 4;
+  int64 pid = 5;
+  double boost = 6;
+  string reason = 7;
+  string alert_id = 8;
+}
+
+message ContainmentAction {
+  string msg_id = 1;
+  double ts = 2;
+  string schema = 3;
+  string policy_id = 4;
+  string alert_id = 5;
+  int32 level = 6;
+  string layer = 7;
+  string target = 8;
+  string action = 9;
+  double lease_seconds = 10;
+  string rationale = 11;
+  bool reversible = 12;
+}
+
+message EnforceHost {
+  string msg_id = 1;
+  double ts = 2;
+  string schema = 3;
+  string policy_id = 4;
+  string host_id = 5;
+  int64 pid = 6;
+  string syscall = 7;
+  double lease_seconds = 8;
+}
+
+message Rollback {
+  string msg_id = 1;
+  double ts = 2;
+  string schema = 3;
+  string policy_id = 4;
+  string reason = 5;
+  string target = 6;
+  bool success = 7;
+}
