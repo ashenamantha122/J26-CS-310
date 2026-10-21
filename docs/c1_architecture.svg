@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 780" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13">
+  <title>LAAX Component 1 — adaptive eBPF endpoint agent (as built, 21 Oct 2026)</title>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#374151"/>
+    </marker>
+    <marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="780" fill="#ffffff"/>
+  <text x="24" y="34" font-size="20" font-weight="700" fill="#111827">LAAX Component 1 — adaptive eBPF endpoint agent</text>
+  <text x="24" y="56" fill="#4b5563">As built, 21 Oct 2026. Light tier always on; deep tier attached only while a process is under investigation.</text>
+
+  <!-- KERNEL -->
+  <rect x="20" y="78" width="1160" height="300" rx="10" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text x="36" y="102" font-weight="700" fill="#374151">KERNEL SPACE (eBPF, CO-RE, one object: ebpf/laax.bpf.c)</text>
+
+  <rect x="40" y="116" width="330" height="170" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="54" y="138" font-weight="700" fill="#1e3a8a">LIGHT tier — always attached</text>
+  <text x="54" y="160" fill="#1f2937">tracepoint sched_process_exec  (+ binary path)</text>
+  <text x="54" y="180" fill="#1f2937">tracepoint sys_enter_connect (v4/v6, TCP/UDP)</text>
+  <text x="54" y="200" fill="#1f2937">tp_btf sched_process_fork → inherit deep/deny</text>
+  <text x="54" y="220" fill="#1f2937">tracepoint sched_process_exit → clear maps</text>
+  <text x="54" y="246" fill="#4b5563" font-size="12">0.4–0.5 µs per call (bpf_stats)</text>
+  <text x="54" y="264" fill="#4b5563" font-size="12">no XDP: cannot attribute packets to a process</text>
+
+  <rect x="390" y="116" width="330" height="170" rx="8" fill="#fef3c7" stroke="#d97706"/>
+  <text x="404" y="138" font-weight="700" fill="#78350f">DEEP tier — attached on demand</text>
+  <text x="404" y="160" fill="#1f2937">kprobe finalize_exec  (full argv)</text>
+  <text x="404" y="180" fill="#1f2937">kprobe tcp_sendmsg  (peer, ports, bytes)</text>
+  <text x="404" y="200" fill="#1f2937">kretprobe inet_csk_accept  (inbound TCP)</text>
+  <text x="404" y="220" fill="#1f2937">kprobe security_file_open  (name, flags)</text>
+  <text x="404" y="246" fill="#4b5563" font-size="12">gated per pid by deep_pids (one map lookup)</text>
+  <text x="404" y="264" fill="#4b5563" font-size="12">attach ≤ 71 ms · detach ≤ 447 ms (budget 500)</text>
+
+  <rect x="740" y="116" width="200" height="170" rx="8" fill="#fee2e2" stroke="#b91c1c"/>
+  <text x="754" y="138" font-weight="700" fill="#7f1d1d">LSM — enforcement</text>
+  <text x="754" y="160" fill="#1f2937">lsm/bprm_check_security</text>
+  <text x="754" y="180" fill="#1f2937">-EPERM on execve for</text>
+  <text x="754" y="200" fill="#1f2937">pids in denied_pids</text>
+  <text x="754" y="220" fill="#1f2937">(covers forked children)</text>
+  <text x="754" y="246" fill="#4b5563" font-size="12">266 ns per decision</text>
+
+  <rect x="960" y="116" width="200" height="170" rx="8" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="974" y="138" font-weight="700" fill="#4c1d95">BPF maps</text>
+  <text x="974" y="160" fill="#1f2937">events  (ring buffer, 4 MiB)</text>
+  <text x="974" y="180" fill="#1f2937">deep_pids  (hash, 4096)</text>
+  <text x="974" y="200" fill="#1f2937">denied_pids  (hash, 1024)</text>
+  <text x="974" y="220" fill="#1f2937">dropped, lsm_stats</text>
+  <text x="974" y="246" fill="#4b5563" font-size="12">batched wake-ups;</text>
+  <text x="974" y="264" fill="#4b5563" font-size="12">delivery p95 10 ms</text>
+
+  <line x1="370" y1="330" x2="1060" y2="330" stroke="#7c3aed" stroke-dasharray="5 4"/>
+  <text x="380" y="350" fill="#4c1d95" font-size="12">events → ring buffer · fork/exit update maps</text>
+  <line x1="205" y1="286" x2="205" y2="330" stroke="#7c3aed" stroke-dasharray="5 4"/>
+  <line x1="555" y1="286" x2="555" y2="330" stroke="#7c3aed" stroke-dasharray="5 4"/>
+  <line x1="1060" y1="286" x2="1060" y2="330" stroke="#7c3aed" stroke-dasharray="5 4"/>
+
+  <!-- USER SPACE -->
+  <rect x="20" y="398" width="840" height="362" rx="10" fill="#f9fafb" stroke="#9ca3af"/>
+  <text x="180" y="422" font-weight="700" fill="#374151">USER SPACE (laax-agent, sandboxed systemd service)</text>
+
+  <rect x="40" y="436" width="220" height="110" rx="8" fill="#ffffff" stroke="#374151"/>
+  <text x="54" y="458" font-weight="700">laax-loader (C, libbpf)</text>
+  <text x="54" y="480" fill="#1f2937" font-size="12">loads + verifies all programs</text>
+  <text x="54" y="498" fill="#1f2937" font-size="12">attach / detach / map ops</text>
+  <text x="54" y="516" fill="#1f2937" font-size="12">times every operation</text>
+  <text x="54" y="534" fill="#1f2937" font-size="12">events → JSON lines</text>
+
+  <rect x="290" y="436" width="250" height="110" rx="8" fill="#ffffff" stroke="#374151"/>
+  <text x="304" y="458" font-weight="700">Threat confidence engine</text>
+  <text x="304" y="480" fill="#1f2937" font-size="12">v2: 2-step ancestry, zone egress,</text>
+  <text x="304" y="498" fill="#1f2937" font-size="12">exec path; guarded baseline; CUSUM</text>
+  <text x="304" y="516" fill="#b45309" font-size="12" font-weight="600">Key Function 1 -- ROC pending</text>
+  <text x="304" y="534" fill="#1f2937" font-size="12">+ E(t) boost from C3</text>
+
+  <rect x="570" y="436" width="270" height="110" rx="8" fill="#ffffff" stroke="#374151"/>
+  <text x="584" y="458" font-weight="700">Mode controller (Key Function 2)</text>
+  <text x="584" y="480" fill="#1f2937" font-size="12">θ↑ / θ↓ hysteresis, min dwell, decay</text>
+  <text x="584" y="498" fill="#1f2937" font-size="12">per-pid gate; global attach on 0→1</text>
+  <text x="584" y="516" fill="#1f2937" font-size="12">retire-after-dwell on exit</text>
+  <text x="584" y="534" fill="#1f2937" font-size="12">serialised transitions</text>
+
+  <rect x="40" y="566" width="250" height="100" rx="8" fill="#ffffff" stroke="#374151"/>
+  <text x="54" y="588" font-weight="700">Enforcement handler</text>
+  <text x="54" y="610" fill="#1f2937" font-size="12">per-policy leases, rollback</text>
+  <text x="54" y="628" fill="#1f2937" font-size="12">refuses unknown pids,</text>
+  <text x="54" y="646" fill="#1f2937" font-size="12">non-execve, no-LSM hosts</text>
+
+  <rect x="310" y="566" width="250" height="100" rx="8" fill="#ffffff" stroke="#374151"/>
+  <text x="324" y="588" font-weight="700">Records</text>
+  <text x="324" y="610" fill="#1f2937" font-size="12">audit.jsonl — hash chain (FR7)</text>
+  <text x="324" y="628" fill="#1f2937" font-size="12">telemetry.csv — 26-col C3 schema</text>
+  <text x="324" y="646" fill="#1f2937" font-size="12">score log (observe mode, ROC)</text>
+
+  <rect x="580" y="566" width="260" height="100" rx="8" fill="#ffffff" stroke="#374151"/>
+  <text x="594" y="588" font-weight="700">Operations</text>
+  <text x="594" y="610" fill="#1f2937" font-size="12">check · status · keygen · verify-audit</text>
+  <text x="594" y="628" fill="#1f2937" font-size="12">/etc/laax/agent.conf (NFR5)</text>
+  <text x="594" y="646" fill="#1f2937" font-size="12">.deb package, logrotate</text>
+
+  <text x="40" y="700" fill="#4b5563" font-size="12">Measured on WSL2 6.18: RAM 48 MB light / 50 MB deep (+2.7%) · 0% event loss in transitions ·</text>
+  <text x="40" y="718" fill="#4b5563" font-size="12">user-space ~50-120 µs per event with v2 (dominant CPU cost) · idle 0.55% of one core.</text>
+  <text x="40" y="742" fill="#4b5563" font-size="12">Evidence: Prototype/demo_evidence/ · Status per requirement: docs/REQUIREMENTS_STATUS.md</text>
+
+  <!-- OUTSIDE -->
+  <rect x="880" y="398" width="300" height="362" rx="10" fill="#ecfdf5" stroke="#059669"/>
+  <text x="896" y="422" font-weight="700" fill="#065f46">LAAX BUS + OTHER COMPONENTS</text>
+  <rect x="900" y="436" width="260" height="90" rx="8" fill="#ffffff" stroke="#059669"/>
+  <text x="914" y="458" font-weight="700">laax-broker</text>
+  <text x="914" y="480" fill="#1f2937" font-size="12">Protocol Buffers over ZeroMQ</text>
+  <text x="914" y="498" fill="#1f2937" font-size="12">CURVE encryption + key allow-list</text>
+  <text x="914" y="516" fill="#1f2937" font-size="12">29,000 events/s, 0 loss (NFR6)</text>
+  <rect x="900" y="546" width="120" height="60" rx="8" fill="#ffffff" stroke="#059669"/>
+  <text x="914" y="570" font-weight="700">C3</text>
+  <text x="914" y="590" fill="#1f2937" font-size="12">GNN correlation</text>
+  <rect x="1040" y="546" width="120" height="60" rx="8" fill="#ffffff" stroke="#059669"/>
+  <text x="1054" y="570" font-weight="700">C4</text>
+  <text x="1054" y="590" fill="#1f2937" font-size="12">containment</text>
+  <text x="900" y="640" fill="#065f46" font-size="12">C1 → C3: HostEvent, ModeChange</text>
+  <text x="900" y="660" fill="#065f46" font-size="12">C3 → C1: ExternalAlert E(t)</text>
+  <text x="900" y="680" fill="#065f46" font-size="12">C4 → C1: EnforceHost, Rollback</text>
+
+  <!-- arrows -->
+  <line x1="110" y1="378" x2="110" y2="434" stroke="#374151" stroke-width="1.6" marker-end="url(#a)"/>
+  <text x="118" y="395" fill="#374151" font-size="11">ring buffer</text>
+  <line x1="260" y1="490" x2="288" y2="490" stroke="#374151" stroke-width="1.6" marker-end="url(#a)"/>
+  <line x1="540" y1="490" x2="568" y2="490" stroke="#374151" stroke-width="1.6" marker-end="url(#a)"/>
+  <path d="M700,436 L700,288" fill="none" stroke="#d97706" stroke-width="1.6" marker-end="url(#a)"/>
+  <text x="708" y="394" fill="#92400e" font-size="11">attach / detach, gate pid</text>
+  <path d="M165,566 L165,555 L850,555 L850,288" fill="none" stroke="#b91c1c" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#r)"/>
+  <text x="858" y="306" fill="#7f1d1d" font-size="11">write denied_pids</text>
+  <line x1="860" y1="616" x2="898" y2="490" stroke="#059669" stroke-width="1.6" marker-end="url(#a)" marker-start="url(#a)"/>
+</svg>

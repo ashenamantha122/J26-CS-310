@@ -178,6 +178,35 @@ and Kubernetes, where every workload is in its own pid namespace. Any
 containment path that accepts a pid from outside C1's telemetry will fail
 exactly this way, silently, in production.
 
+Since 21 Oct C1 **enforces** the rule: an `EnforceHost` for a pid C1 has not
+reported is refused and recorded as `enforce_rejected` in the audit log.
+
+## The C4 -> C1 enforcement contract (21 Oct 2026)
+
+What C4 can rely on when it publishes `resp.enforce.host`:
+
+| Field / case | C1 behaviour |
+|---|---|
+| `syscall` | Only `"execve"` is enforceable (the hook is `lsm/bprm_check_security`). Anything else is **refused**, not armed. Before 21 Oct a request to deny `connect` was reported as armed and actually denied execve. |
+| `pid` | Must be a pid C1 reported (root pid namespace), else refused. |
+| scope | The denial covers the process **and every process it forks from then on**, extended in-kernel at fork. Existing processes keep running and keep their sockets. Before 21 Oct a denied process could simply fork a child that exec'd freely. |
+| `policy_id` | Leases are tracked per policy. Overlapping policies on one pid: the pid is released only when the last of them ends. Re-sending a policy id renews its lease. |
+| `lease_seconds` | C1 releases the policy (process and inherited children) when it expires, even if C4 never says so. |
+| `resp.rollback` | A `Rollback` naming an active `policy_id` releases it early (`disproved`, `analyst_override`). |
+| process exit | The kernel drops the pid's denial at exit, so a recycled pid never inherits it. |
+
+Every armed, inherited, released and refused decision is written to the
+hash-chained audit log (`services/c1_audit.py`, FR7).
+
+## Bus authentication
+
+`TcpBus`/`Broker` take a shared token (`LAAX_BUS_TOKEN`); a client that does not
+present it as its first frame is disconnected, and `run_broker.py` refuses to
+start without one unless `--insecure`. Before this, any local user could
+connect to 127.0.0.1:5599 and publish `resp.enforce.host` or `corr.external`.
+The token authenticates but does not encrypt: across hosts, run the bus inside
+TLS or WireGuard until the agreed production transport has mTLS.
+
 ## Light mode must outlive the controller
 
 The loader exited when stdin reached EOF, so running it as a daemon, from a

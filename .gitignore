@@ -8,3 +8,8 @@ ebpf/laax-loader
 
 # telemetry written by --export
 c1_telemetry*.csv
+
+# Python packaging & build artifacts
+*.egg-info/
+build/
+dist/
