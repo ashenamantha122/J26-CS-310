@@ -39,7 +39,6 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import ipaddress
 import json
 import os
 import signal
@@ -113,21 +112,6 @@ def load_config(path: str) -> Dict[str, Any]:
     for section, body in raw.items():
         if not isinstance(body, dict):
             raise ConfigError(f"{path}: section {section!r} must be an object")
-        if section == "zones":
-            zones = {}
-            for name, networks in body.items():
-                if not isinstance(name, str) or not isinstance(networks, list) or not networks:
-                    raise ConfigError(f"{path}: zones.{name} must be a non-empty list of CIDRs")
-                if not all(isinstance(network, str) for network in networks):
-                    raise ConfigError(f"{path}: zones.{name} must contain CIDR strings")
-                try:
-                    for network in networks:
-                        ipaddress.ip_network(network, strict=False)
-                except ValueError as exc:
-                    raise ConfigError(f"{path}: zones.{name}: {exc}") from exc
-                zones[name] = networks
-            out["zones"] = zones
-            continue
         for key, value in body.items():
             spec = CONFIG_KEYS.get((section, key))
             if spec is None:
@@ -163,8 +147,6 @@ def validate(args: argparse.Namespace) -> None:
         raise ConfigError("decay_rate must be in (0, 1)")
     if not 0.0 <= args.inherit <= 1.0:
         raise ConfigError("inheritance_factor must be in [0, 1]")
-    if not isinstance(args.zones, dict):
-        raise ConfigError("zones must be a mapping of zone names to CIDR lists")
 
 
 class SyntheticLiveSource:
@@ -345,7 +327,6 @@ class AgentRunner:
             audit=self.audit,
             observe=self.args.observe,
             score_log=self.score_log,
-            zones=self.args.zones,
         )
         if self.args.observe:
             print("[*] OBSERVE mode: scoring and logging only; tracing depth never changes.")
@@ -637,7 +618,6 @@ def build_parser() -> argparse.ArgumentParser:
                    help="TCP Broker endpoint host:port (when --bus tcp)")
     p.add_argument("--host-id", default="host-0", help="Host identifier (default: host-0)")
     p.add_argument("--host-ip", default="10.0.0.12", help="Host IP address for telemetry (default: 10.0.0.12)")
-    p.add_argument("--zones", default={}, help=argparse.SUPPRESS)
     p.add_argument("--baseline", type=float, default=5.0, help="Benign baseline window in seconds (default: 5.0)")
     p.add_argument("--theta-up", type=float, default=7.0, help="Deep mode escalation threshold (default: 7.0)")
     p.add_argument("--theta-down", type=float, default=4.0, help="Light mode de-escalation threshold (default: 4.0)")

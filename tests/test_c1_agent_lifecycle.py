@@ -75,7 +75,7 @@ class AgentLifecycleTests(unittest.IsolatedAsyncioTestCase):
         decision = self.ctl.decide(st)
         self.assertEqual(decision, ("light", "dwell_expiry"), "Should de-escalate after dwell time")
 
-    async def test_external_alert_boost_is_applied_as_delivered_by_c3(self):
+    async def test_external_alert_boost(self):
         st = ProcState(pid=2002, comm="sshd", mode="light", confidence=2.0)
         self.agent.procs[2002] = st
 
@@ -87,8 +87,6 @@ class AgentLifecycleTests(unittest.IsolatedAsyncioTestCase):
         )
         await self.agent.on_external_alert(Topic.EXTERNAL_ALERT, alert)
 
-        # Boost calibration is C3's contract. C1 must apply the received value
-        # verbatim so a C3 alert at the agreed +6 reaches theta_up from 2.
         self.assertEqual(st.confidence, 8.0)
         self.assertEqual(st.mode, "deep", "Process should escalate to deep mode after E(t) boost")
         self.assertIn(2002, self.agent.deep_pids)

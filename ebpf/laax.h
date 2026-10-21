@@ -49,7 +49,6 @@ struct laax_event {
     __s32 ret;
     char  comm[TASK_COMM_LEN];
     char  pcomm[TASK_COMM_LEN];   /* parent comm, for the lineage rarity key */
-    char  gpcomm[TASK_COMM_LEN];  /* grandparent comm, for v2 ancestry */
     /* exec (light and deep): path of the binary actually executed. comm is
        chosen by the process and can be anything; this is what the kernel
        loaded, so the scorer keys executable-path signals on it. */

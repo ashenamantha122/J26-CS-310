@@ -14,7 +14,7 @@ Component 1 has fulfilled **100% of the pre-PP1 core implementation (the 60% req
    - Deep-mode kprobes (`security_bprm_check`, `tcp_sendmsg`) attached on-demand via `bpf_link`.
    - eBPF LSM surgical containment hook (`lsm/bprm_check_security`) denying `execve` per-PID.
 2. **Autonomous Agent Logic (`services/c1_agent.py`)**:
-   - Information-theoretic `RarityScorer` (Lidstone-smoothed, α=0.5, rarity).
+   - Information-theoretic `RarityScorer` (Laplace-smoothed n-gram rarity).
    - One-sided CUSUM change detector (pivoted from EWMA to detect APT slow-burn attacks).
    - `ModeController` with hysteresis ($\theta_{up}=7.0, \theta_{down}=4.0$) and minimum dwell floor ($3.0s$).
    - Process tree inheritance (suspicion and tracing depth flow down `ppid -> pid`).

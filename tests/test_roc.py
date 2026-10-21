@@ -138,9 +138,6 @@ class ObserveModeTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(len(rows), 5)
             self.assertEqual(rows[0]["exe"], "/tmp/rare0")
             self.assertFalse(rows[0]["learning"])
-            self.assertIn("explanation", rows[0])
-            self.assertIn("ancestry", rows[0]["explanation"]["signals"])
-            self.assertGreaterEqual(rows[0]["native_score"], 0.0)
 
 
 if __name__ == "__main__":

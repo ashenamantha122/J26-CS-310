@@ -10,8 +10,7 @@ system-overview diagram:
 C2 scores IoT flows malicious
   -> C3 links the IoT address to a host process through a socket
   -> C3 raises CorrelationAlert (to C4) and E(t) (back to C1)
-  -> C1 applies the boost; promotion occurs only after its calibrated threshold
-     is crossed (the current scoring-v2 demo does not claim E(t) alone does)
+  -> C1 flips that process subtree to deep tracing; argv becomes visible
   -> C4 picks the minimum effective containment, applies SDN + eBPF LSM
   -> the lease expires and C4 rolls the containment back automatically
 ```
@@ -80,7 +79,7 @@ python run_demo.py --trace    # plus every bus message
 
 | | Real | Stubbed |
 |---|---|---|
-| **C1** | explainable scoring v2 (ancestry, zone egress, executable path, guarded baseline) with CUSUM confidence, hysteresis + dwell controller, in-kernel subtree inheritance, time-based decay, global-attach vs pid-gating split, LSM enforcement, audit log, protobuf/ZeroMQ export; runs on the live kernel and as an installed service | the kernel, on Windows only (`SimulatedBackend`); live ROC calibration still required |
+| **C1** | rarity scorer with CUSUM confidence, hysteresis + dwell controller, in-kernel subtree inheritance, time-based decay, global-attach vs pid-gating split, LSM enforcement, audit log, protobuf/ZeroMQ export; runs on the live kernel and as an installed service | the kernel, on Windows only (`SimulatedBackend`); scoring v2 not yet written |
 | **C2** | feature sets, threat-model exclusion, T1/T2/T3 evaluation, GBDT model | TON_IoT itself — flows are synthetic with the same structure |
 | **C3** | multi-partite graph, GraphSAGE autoencoder, incident traversal, alert fan-out | trained on the demo's own benign window, not on a full dataset |
 | **C4** | graduated levels, criticality policy, lease + rollback manager, dedup | Open vSwitch — the exact `ovs-ofctl` commands are printed; set `dry_run=False` to execute |

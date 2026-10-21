@@ -128,7 +128,6 @@ static __always_inline struct laax_event *reserve(__u8 kind, __u8 depth)
     e->ret      = 0;
     e->argv[0]     = '\0';
     e->pcomm[0]    = '\0';
-    e->gpcomm[0]   = '\0';
     e->filename[0] = '\0';
     bpf_get_current_comm(&e->comm, sizeof(e->comm));
     return e;
@@ -187,16 +186,8 @@ static __always_inline void submit(struct laax_event *e)
 static __always_inline void fill_parent(struct laax_event *e)
 {
     struct task_struct *task = (struct task_struct *)bpf_get_current_task();
-    struct task_struct *parent = BPF_CORE_READ(task, real_parent);
-    if (!parent)
-        return;
-    e->ppid = BPF_CORE_READ(parent, tgid);
-    BPF_CORE_READ_STR_INTO(&e->pcomm, parent, comm);
-    /* Long-lived parents often predate the agent, so user-space process-table
-       lookup cannot reliably recover this. Capture it with the exec event. */
-    struct task_struct *grandparent = BPF_CORE_READ(parent, real_parent);
-    if (grandparent)
-        BPF_CORE_READ_STR_INTO(&e->gpcomm, grandparent, comm);
+    e->ppid = BPF_CORE_READ(task, real_parent, tgid);
+    BPF_CORE_READ_STR_INTO(&e->pcomm, task, real_parent, comm);
 }
 
 /* ------------------------------------------------------------- light -- */

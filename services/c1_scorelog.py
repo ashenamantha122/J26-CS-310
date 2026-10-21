@@ -10,8 +10,7 @@ curve instead of one operating point.
 
 Line format (one object per scored event):
     {"ts": <epoch s>, "pid", "ppid", "comm", "parent", "exe", "kind",
-     "rarity", "native_score", "confidence", "learning", "learned", "explanation",
-     "scorer": "<name>"}
+     "rarity", "confidence", "learning": <bool>, "scorer": "<name>"}
 """
 
 from __future__ import annotations
@@ -25,7 +24,7 @@ from typing import Optional, TextIO
 class ScoreLog:
     FLUSH_EVERY_S = 0.5
 
-    def __init__(self, path: str, scorer: str = "v2") -> None:
+    def __init__(self, path: str, scorer: str = "v1") -> None:
         d = os.path.dirname(path)
         if d:
             os.makedirs(d, exist_ok=True)
@@ -34,16 +33,13 @@ class ScoreLog:
         self._last = 0.0
         self.records = 0
 
-    def write(self, ev, rarity: float, native_score: float, confidence: float, learning: bool,
-              *, learned: bool = False, explanation=None) -> None:
+    def write(self, ev, rarity: float, confidence: float, learning: bool) -> None:
         if self._fh is None:
             return
         rec = {"ts": round(ev.ts, 6), "pid": ev.pid, "ppid": ev.ppid,
                "comm": ev.comm, "parent": getattr(ev, "comm_parent", None),
                "exe": ev.exe, "kind": ev.kind, "rarity": round(rarity, 4),
-               "native_score": round(native_score, 4),
                "confidence": round(confidence, 4), "learning": learning,
-               "learned": learned, "explanation": explanation or {},
                "scorer": self.scorer}
         self._fh.write(json.dumps(rec, separators=(",", ":")) + "\n")
         self.records += 1

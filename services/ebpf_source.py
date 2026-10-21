@@ -283,8 +283,6 @@ class EbpfKernelSource:
         # agent a pid->comm lookup that races against process exit.
         if d.get("pcomm"):
             ev.comm_parent = d["pcomm"]  # type: ignore[attr-defined]
-        if d.get("gpcomm"):
-            ev.comm_grandparent = d["gpcomm"]  # type: ignore[attr-defined]
         if kind == "fork":
             ev.inherit_flags = d.get("flags", 0)  # type: ignore[attr-defined]
         return ev

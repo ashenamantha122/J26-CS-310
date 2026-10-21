@@ -4,7 +4,7 @@ IT23184312 | Amantha M A
 
 What is real here and what is stubbed
 ------------------------------------
-REAL   : the explainable rarity scorer, the CUSUM confidence model, the hysteresis + dwell
+REAL   : the rarity scorer, the EWMA confidence model, the hysteresis + dwell
          mode controller, the E(t) external-alert path, the LSM enforcement
          handler, and the duty-cycle accounting. This is the research logic and
          it is the part being evaluated.
@@ -19,7 +19,6 @@ live confidence score, not a deployment-time setting.
 from __future__ import annotations
 
 import asyncio
-import ipaddress
 import math
 import time
 from collections import defaultdict
@@ -60,108 +59,27 @@ INHERIT_DEEP, INHERIT_DENY = 0x1, 0x2
 # --------------------------------------------------------------------------
 # Rarity scoring:  r = -log2( (count + a) / (total + a*N) )
 # --------------------------------------------------------------------------
-@dataclass(frozen=True)
-class Signal:
-    name: str
-    context: str
-    key: tuple
-    rarity: float
-    why: str
-
-
-@dataclass(frozen=True)
-class Score:
-    """One evaluated event, reusable for guarded learning and score logging."""
-    evidence: float
-    native_score: float
-    signals: tuple[Signal, ...]
-
-    def explanation(self) -> Dict[str, object]:
-        """Build the expensive analyst-facing form only when it is requested."""
-        detail = {}
-        for signal in self.signals:
-            contribution = RarityScorer.SIGNAL_WEIGHTS[signal.name] * signal.rarity
-            detail[signal.name] = {
-                "rarity": round(signal.rarity, 4),
-                "weight": RarityScorer.SIGNAL_WEIGHTS[signal.name],
-                "contribution": round(contribution, 4),
-                "why": signal.why,
-                "key": list(signal.key),
-            }
-        return {"version": "v2", "signals": detail,
-                "raw_evidence": round(self.evidence, 4),
-                "native_score": round(self.native_score, 4)}
-
-
 class RarityScorer:
     """
     Information-theoretic rarity over a benign baseline profile.
 
-    Scoring v2 deliberately keeps each signal separate so an analyst can see
-    *why* a process became suspicious:
-
-        ancestry    : (grandparent -> parent -> child), falling back to the
-                      one-step (parent -> child) key when the grandparent was
-                      not observed;
-        egress      : (process -> destination zone -> port);
-        executable  : the path captured by sched_process_exec, not the mutable
-                      process name.
+    Two contexts are tracked, both cheap enough to live in a BPF LRU hash in the
+    real agent:
+        lineage : (parent_comm -> child_comm)
+        egress  : (comm -> dport)
 
     The baseline is built from BENIGN traffic only. Including attack data would
     normalise the attack pattern and flatten its rarity -- proposal slide 8.
-    This uses **Lidstone smoothing** (alpha = 0.5), not Laplace smoothing.
     """
 
-    SIGNAL_WEIGHTS = {"ancestry": 0.50, "egress": 0.30, "executable": 0.20}
-    # A single ancestry signal should retain the same initial evidence scale as
-    # v1, so already-calibrated CUSUM thresholds remain meaningful.
-    RAW_SCALE = 2.0
-
-    def __init__(self, alpha: float = 0.5, vocab: int = 128,
-                 zones: Optional[Dict[str, list[str]]] = None) -> None:
+    def __init__(self, alpha: float = 0.5, vocab: int = 128) -> None:
         self.alpha, self.vocab = alpha, vocab
-        # ``lineage`` is retained as an alias for compatibility with old score
-        # logs and status output. New profiles use ancestry_2 when possible.
-        self.counts: Dict[str, Dict[tuple, int]] = {
-            "lineage": defaultdict(int), "ancestry_2": defaultdict(int),
-            "egress": defaultdict(int), "executable": defaultdict(int),
-        }
+        self.counts: Dict[str, Dict[tuple, int]] = {"lineage": defaultdict(int),
+                                                    "egress": defaultdict(int)}
         self.totals: Dict[str, int] = defaultdict(int)
         self.learning = True
-        self._baseline_samples: list[float] = []
-        self._baseline_sum = 0.0
-        self._baseline_count = 0
+        self._seen: list[float] = []
         self.baseline_rarity = 0.0     # mean rarity over the benign window
-        self.calm_rarity = 0.0         # learned p95 at freeze, not a magic constant
-        self.last_explanation: Dict[str, object] = {}
-        self._zones: list[tuple[str, ipaddress._BaseNetwork]] = []
-        for name, networks in (zones or {}).items():
-            for network in networks:
-                self._zones.append((name, ipaddress.ip_network(network, strict=False)))
-
-    def destination_zone(self, address: Optional[str]) -> str:
-        """Return the configured zone for an address without guessing one.
-
-        Longest-prefix matching lets an explicit IoT subnet take precedence
-        over a broader private-network rule. Addresses absent from a connect
-        record stay ``unknown`` rather than being fabricated.
-        """
-        if not address:
-            return "unknown"
-        try:
-            ip = ipaddress.ip_address(address)
-        except ValueError:
-            return "unknown"
-        matches = [(net.prefixlen, name) for name, net in self._zones if ip in net]
-        if matches:
-            return max(matches)[1]
-        if ip.is_loopback:
-            return "loopback"
-        if ip.is_link_local:
-            return "link_local"
-        if ip.is_private:
-            return "private"
-        return "public"
 
     def observe(self, ctx: str, key: tuple) -> None:
         self.counts[ctx][key] += 1
@@ -172,79 +90,29 @@ class RarityScorer:
         p = (c + self.alpha) / (self.totals[ctx] + self.alpha * self.vocab)
         return -math.log2(max(p, 1e-12))
 
-    def evaluate(self, ev: HostEvent) -> Score:
-        """Evaluate an event once; callers reuse this for learning and logging."""
-        signals: list[Signal] = []
-        if ev.kind == "exec":
-            parent = getattr(ev, "comm_parent", None) or "?"
-            grandparent = getattr(ev, "comm_grandparent", None)
-            if grandparent:
-                ctx, key = "ancestry_2", (grandparent, parent, ev.comm)
-                why = "two-step ancestry"
-            else:
-                ctx, key = "lineage", (parent, ev.comm)
-                why = "one-step ancestry fallback"
-            signals.append(Signal("ancestry", ctx, key, self.rarity(ctx, key), why))
-            if ev.exe:
-                key = (ev.exe,)
-                signals.append(Signal("executable", "executable", key,
-                                      self.rarity("executable", key),
-                                      "executed binary path"))
-        if ev.kind in ("connect", "accept"):
-            zone = self.destination_zone(ev.daddr)
-            key = (ev.comm, zone, ev.dport or 0)
-            signals.append(Signal("egress", "egress", key,
-                                  self.rarity("egress", key),
-                                  f"destination zone {zone}"))
-        weighted = sum(self.SIGNAL_WEIGHTS[s.name] * s.rarity for s in signals)
-        evidence = weighted * self.RAW_SCALE
-        native = 1.0 - math.exp(-evidence / 7.0) if evidence else 0.0
-        return Score(evidence=evidence, native_score=native, signals=tuple(signals))
-
-    def _observe_score(self, score: Score) -> bool:
-        for signal in score.signals:
-            self.observe(signal.context, signal.key)
-        self._baseline_sum += score.evidence
-        self._baseline_count += 1
-        self.baseline_rarity = self._baseline_sum / self._baseline_count
-        return bool(score.signals)
-
     def score_event(self, ev: HostEvent) -> float:
-        """Compatibility API for tools; the live agent uses evaluate()."""
-        score = self.evaluate(ev)
-        self.last_explanation = score.explanation()
-        if self.learning:
-            self._baseline_samples.append(score.evidence)
-            self._observe_score(score)
-        return score.evidence
-
-    def learn(self, score: Score, *, confidence_before: float, mode: str,
-              confidence_limit: float) -> bool:
-        """Adapt only below the ROC-selected de-escalation and baseline p95."""
-        if self.learning:
-            self._baseline_samples.append(score.evidence)
-            return self._observe_score(score)
-        # Online adaptation must never turn a previously unseen feature into
-        # normal behaviour on its first appearance. In particular, a known
-        # process name executing from a new path (for example /tmp/ls) is the
-        # exact executable-path signal C1 is meant to preserve. New baseline
-        # variants belong in an explicitly reviewed retraining window.
-        if any(self.counts[s.context].get(s.key, 0) == 0 for s in score.signals):
-            return False
-        if not (mode == "light" and confidence_before <= confidence_limit
-                and score.evidence <= self.calm_rarity):
-            return False
-        # Keep the expected baseline in step with the expanding calm profile;
-        # otherwise count growth silently makes the detector less sensitive.
-        return self._observe_score(score)
+        if ev.kind == "exec":
+            key = (ev.comm_parent or "?", ev.comm)
+            r = self.rarity("lineage", key)
+            if self.learning:
+                self.observe("lineage", key)
+                self._seen.append(r)
+            return r
+        if ev.kind in ("connect", "accept"):
+            key = (ev.comm, ev.dport)
+            r = self.rarity("egress", key)
+            if self.learning:
+                self.observe("egress", key)
+                self._seen.append(r)
+            return r
+        return 0.0
 
     def freeze(self) -> None:
         """End the baseline window. From here on, rare things stay rare."""
         self.learning = False
-        if self._baseline_samples:
-            ordered = sorted(self._baseline_samples)
-            self.calm_rarity = ordered[round(0.95 * (len(ordered) - 1))]
-        self._baseline_samples = []
+        if self._seen:
+            self.baseline_rarity = sum(self._seen) / len(self._seen)
+        self._seen = []
 
 
 # HostEvent has no parent comm field in the wire contract (the kernel gives us
@@ -381,8 +249,7 @@ class C1Agent:
                  backend: Optional[TracingBackend] = None,
                  audit: Optional[AuditLog] = None,
                  observe: bool = False,
-                 score_log=None,
-                 zones: Optional[Dict[str, list[str]]] = None) -> None:
+                 score_log=None) -> None:
         self.bus, self.source, self.host_id = bus, source, host_id
         # Calibration mode (proposal 3.5): score and log everything, switch
         # nothing, so the threshold can be chosen from a ROC sweep afterwards.
@@ -391,14 +258,13 @@ class C1Agent:
         # SimulatedBackend models the costs; EbpfBackend measures them. The
         # agent cannot tell the difference, which is the point.
         self.backend: TracingBackend = backend or SimulatedBackend()
-        self.scorer = RarityScorer(zones=zones)
+        self.scorer = RarityScorer()
         self.ctl = controller or ModeController()
         # FR7: every transition and enforcement decision. In memory unless a
         # path is configured, so tests and the demo still produce the record.
         self.audit = audit or AuditLog(host_id=host_id)
         self.procs: Dict[int, ProcState] = {}
         self.comm_by_pid: Dict[int, str] = {}
-        self.parent_by_pid: Dict[int, int] = {}
         self.denied: Dict[int, set] = defaultdict(set)   # LSM enforcement state
         # Enforcement is tracked per POLICY, not per pid: two overlapping leases
         # on one pid must not have the first expiry lift the second, and a
@@ -532,7 +398,6 @@ class C1Agent:
             st = ProcState(pid=ev.pid, comm=ev.comm, confidence=seed)
             self.procs[ev.pid] = st
         self.comm_by_pid[ev.pid] = ev.comm
-        self.parent_by_pid[ev.pid] = ev.ppid
         if flags & INHERIT_DEEP and st.mode != "deep":
             await self._switch(st, "deep", "inherited")
         if flags & INHERIT_DENY:
@@ -555,7 +420,6 @@ class C1Agent:
         else:
             self.procs.pop(ev.pid, None)
         self.comm_by_pid.pop(ev.pid, None)
-        self.parent_by_pid.pop(ev.pid, None)
         for policy in self.pid_policies.pop(ev.pid, set()):
             lease = self.leases.get(policy)
             if lease:
@@ -676,13 +540,6 @@ class C1Agent:
             # key to ('?', child) and destroyed the rarity signal.
             if not getattr(ev, "comm_parent", None):
                 ev.comm_parent = self.comm_by_pid.get(ev.ppid)  # type: ignore[attr-defined]
-            # Prefer the kernel's grandparent name. Long-lived services often
-            # started before C1, so our local process table is incomplete; an
-            # unconditional assignment here used to erase gpcomm with None.
-            grandparent_pid = self.parent_by_pid.get(ev.ppid)
-            if not getattr(ev, "comm_grandparent", None) and grandparent_pid is not None:
-                ev.comm_grandparent = self.comm_by_pid.get(grandparent_pid)  # type: ignore[attr-defined]
-            self.parent_by_pid[ev.pid] = ev.ppid
 
             await self._retire_if_reused(ev.pid)
             st = self.procs.get(ev.pid)
@@ -717,18 +574,10 @@ class C1Agent:
             if ev.hook in ("kprobe", "uretprobe"):
                 rarity = 0.0
             else:
-                confidence_before = st.confidence
-                score = self.scorer.evaluate(ev)
-                rarity = score.evidence
-                learned = self.scorer.learn(
-                    score, confidence_before=confidence_before, mode=st.mode,
-                    confidence_limit=self.ctl.theta_down)
+                rarity = self.scorer.score_event(ev)
                 self.ctl.update_confidence(st, rarity, self.scorer.baseline_rarity)
                 if self.score_log is not None:
-                    self.score_log.write(
-                        ev, rarity, score.native_score, st.confidence,
-                        self.scorer.learning, learned=learned,
-                        explanation=score.explanation())
+                    self.score_log.write(ev, rarity, st.confidence, self.scorer.learning)
 
             ev.rarity = round(rarity, 3)
             ev.confidence = round(st.confidence, 3)

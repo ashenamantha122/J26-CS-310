@@ -93,10 +93,9 @@ static int handle_event(void *ctx, void *data, size_t len)
         return 0;
     const struct laax_event *e = data;
 
-    char comm[64], pcomm[64], gpcomm[64], argv[MAX_ARGV_LEN * 6 + 8];
+    char comm[64], pcomm[64], argv[MAX_ARGV_LEN * 6 + 8];
     json_escape(e->comm, comm, sizeof(comm));
     json_escape(e->pcomm, pcomm, sizeof(pcomm));
-    json_escape(e->gpcomm, gpcomm, sizeof(gpcomm));
     size_t alen = e->argv_len < MAX_ARGV_LEN ? e->argv_len : MAX_ARGV_LEN - 1;
     /* Trailing NUL of the last argument is not a separator. */
     while (alen && e->argv[alen - 1] == '\0')
@@ -119,11 +118,11 @@ static int handle_event(void *ctx, void *data, size_t len)
     const char *proto = e->proto == 6 ? "tcp" : e->proto == 17 ? "udp" : "";
 
     printf("{\"ts_ns\":%llu,\"pid\":%u,\"ppid\":%u,\"comm\":\"%s\","
-           "\"pcomm\":\"%s\",\"gpcomm\":\"%s\",\"kind\":\"%s\",\"depth\":\"%s\","
+           "\"pcomm\":\"%s\",\"kind\":\"%s\",\"depth\":\"%s\","
            "\"family\":%u,\"proto\":\"%s\","
            "\"daddr\":\"%s\",\"saddr\":\"%s\",\"dport\":%u,\"sport\":%u,"
            "\"filename\":\"%s\",\"argv\":\"%s\",\"flags\":%u,\"ret\":%d}\n",
-           (unsigned long long)e->ts_ns, e->pid, e->ppid, comm, pcomm, gpcomm,
+           (unsigned long long)e->ts_ns, e->pid, e->ppid, comm, pcomm,
            kind_name(e->kind), e->depth == LAAX_DEEP ? "deep" : "light",
            e->family, proto, daddr, saddr, e->dport, e->sport, filename, argv,
            e->flags, e->ret);

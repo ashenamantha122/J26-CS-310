@@ -7,8 +7,7 @@ diagram, in order:
   C2 scores IoT flows malicious
     -> C3 links the IoT address to a host process through a socket
     -> C3 raises a CorrelationAlert  and  E(t) back to C1
-    -> C1 applies the boost; promotion requires it to cross the ROC-selected
-       threshold (the current scoring-v2 demo does not claim E(t) alone does)
+    -> C1 flips that process to deep tracing and the execve chain becomes visible
     -> C4 selects the minimum effective containment and applies it on both layers
     -> the lease expires and C4 rolls the containment back automatically
 """
@@ -93,8 +92,8 @@ async def attack_phase(src: ScriptedKernelSource, pace: float = 0.05) -> None:
 
     The inbound accept and the shell spawn are visible in light mode as bare
     lineage and socket facts. The argv, the syscall detail and the return codes
-    are only carried once the process is in deep mode. This scenario is not
-    evidence that the current scoring-v2 C3 boost alone crosses that threshold.
+    are only carried once the process is in deep mode -- which is exactly the
+    forensic context the adaptive switch exists to recover.
     """
     # 1. The compromised IoT device reaches the host's exposed service.
     await src.feed(HostEvent(

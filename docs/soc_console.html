@@ -438,10 +438,6 @@ img{max-width:100%}
       <div class="topbar-spacer"></div>
       <div class="clockread">t + <b id="clock">0.00</b> s &middot; <span id="evcount">0</span> / <span id="evtotal">0</span> events</div>
     </div>
-    <p class="chart-note">Reference playback from scoring v1. It is retained for
-      interface illustration only: do not use it to claim that scoring-v2's
-      current C3 <span class="mono">+6</span> alert alone promotes C1 to deep
-      tracing (the observed v2 state is 0.49 + 6.00 &lt; θ↑ 7.00).</p>
     <div class="track">
       <div class="phases" id="phases"></div>
       <div class="playhead" id="playhead" style="left:0"></div>
@@ -594,8 +590,8 @@ img{max-width:100%}
       <div class="card-head"><h2>Tracing depth over the incident</h2><span class="eyebrow">C1</span></div>
       <div class="card-body">
         <svg class="plot" id="plot-duty" viewBox="0 0 420 190" role="img" aria-label="Step area chart of the share of tracked processes in deep tracing mode over the incident, peaking at 10.8 percent and returning to zero after the lease expires."></svg>
-        <p class="chart-note">Reference v1 replay only. A fresh v2 capture is
-          required before attributing a deep transition to C3&rsquo;s E(t).</p>
+        <p class="chart-note">Share of tracked processes in deep mode. Zero through the benign window &mdash; the agent
+          only pays for depth after C3&rsquo;s E(t) arrives, and decays back on its own.</p>
       </div>
     </div>
 
@@ -661,8 +657,8 @@ img{max-width:100%}
 "use strict";
 
 /* ------------------------------------------------------------------
-   Reference scoring-v1 replay. These entries are retained for the console
-   interface only; they are not evidence for scoring-v2's C3 threshold.
+   The replay. Every entry below is an actual message from the
+   lateral_movement scenario (seed 4), in the order the bus carried it.
 ------------------------------------------------------------------- */
 const EVENTS = [
   {t:0.00, c:"C1", topic:"host.event",   k:"", title:"Baseline frozen — 8 lineage pairs, 4 egress pairs over 90 benign events"},
@@ -671,8 +667,8 @@ const EVENTS = [
   {t:1.34, c:"C3", topic:"corr.alert", k:"crit", title:"CORRELATED conf=0.990 — chain iot → ip → sock → sshd", alert:1},
   {t:1.35, c:"C4", topic:"resp.action", k:"act", title:"sdn$ ovs-ofctl add-flow br0 priority=800,ip,nw_src=66.42.13.90,actions=drop,hard_timeout=6"},
   {t:1.36, c:"C4", topic:"resp.action", k:"act", title:"LEVEL 3 ISOLATE target=iot-07 [standard] lease=6s", contain:true},
-  {t:1.40, c:"C3", topic:"corr.external", k:"act", title:"[v1 reference] E(t) → C1: pid 1400 confidence 2.84 → 8.84"},
-  {t:1.42, c:"C1", topic:"host.mode", k:"crit", title:"[v1 reference] pid 1400 (sshd) light → DEEP, conf=8.84",
+  {t:1.40, c:"C3", topic:"corr.external", k:"act", title:"E(t) → C1: pid 1400 confidence 2.84 → 8.84 (cross-domain path from iot-07)"},
+  {t:1.42, c:"C1", topic:"host.mode", k:"crit", title:"pid 1400 (sshd) light → DEEP, conf=8.84, kprobe attach 13.741 ms",
     deep:{pid:1400, comm:"sshd", argv:null, conf:"8.84", trig:"external_alert", sw:"13.741 ms attach"}},
   {t:1.45, c:"C1", topic:"resp.enforce.host", k:"crit", title:"LSM ARMED — deny execve for pid 1400 (0.011 ms, lease 6s, policy bd1479261c7e)", lsm:true},
   {t:1.60, c:"C1", topic:"host.mode", k:"", title:"pid 4471 (bash) light → DEEP, conf=6.19, inherited from parent subtree",

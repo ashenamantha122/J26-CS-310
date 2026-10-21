@@ -358,7 +358,7 @@ class KernelParsingTests(unittest.IsolatedAsyncioTestCase):
         return await EbpfKernelSource(FakeLoader(), host_id="h").__anext__()
 
     def base(self, **kw):
-        d = {"pid": 7, "ppid": 1, "comm": "nc", "pcomm": "bash", "gpcomm": "sshd", "kind": "exec",
+        d = {"pid": 7, "ppid": 1, "comm": "nc", "pcomm": "bash", "kind": "exec",
              "depth": "deep", "daddr": "", "saddr": "", "dport": 0, "sport": 0,
              "argv": "", "flags": 0, "ret": 0}
         d.update(kw)
@@ -368,7 +368,6 @@ class KernelParsingTests(unittest.IsolatedAsyncioTestCase):
         ev = await self.parse(self.base(argv="nc\x1f-e\x1f/bin/sh -i"))
         self.assertEqual(ev.argv, ["nc", "-e", "/bin/sh -i"])
         self.assertEqual(ev.hook, "kprobe")
-        self.assertEqual(ev.comm_grandparent, "sshd")
 
     async def test_fork_is_lifecycle_not_a_kprobe(self):
         ev = await self.parse(self.base(kind="fork", flags=3))
