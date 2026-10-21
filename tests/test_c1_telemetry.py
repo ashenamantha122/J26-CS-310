@@ -64,11 +64,18 @@ class SchemaTests(unittest.TestCase):
         self.assertEqual(r["host_ip"], HOST_IP)
 
     def test_connect_falls_back_to_host_ip_and_leaves_unknown_port_empty(self):
-        r = row(kind="connect", hook="tracepoint", daddr="66.42.13.90", dport=4444)
+        r = row(kind="connect", hook="tracepoint", daddr="66.42.13.90", dport=4444,
+                proto="tcp")
         self.assertEqual(r["event_type"], "network_connect")
         self.assertEqual((r["src_ip"], r["dst_ip"]), (HOST_IP, "66.42.13.90"))
         self.assertEqual((r["src_port"], r["dst_port"]), ("", 4444))
         self.assertEqual(r["protocol"], "TCP")
+
+    def test_unknown_protocol_is_not_guessed(self):
+        r = row(kind="connect", hook="tracepoint", daddr="::1", dport=53)
+        self.assertEqual(r["protocol"], NULL)
+        r = row(kind="connect", hook="tracepoint", daddr="::1", dport=53, proto="udp")
+        self.assertEqual(r["protocol"], "UDP")
         self.assertEqual(r["syscall_result"], NULL)   # entry tracepoint: result unknown
 
     def test_accept_puts_remote_peer_in_src(self):

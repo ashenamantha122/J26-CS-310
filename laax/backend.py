@@ -35,23 +35,27 @@ class SimulatedBackend:
     be labelled as modelled when it is reported.
 
     The defaults below are the MEDIANS measured by `run_live.py --calibrate` on
-    WSL2 kernel 6.18.33.2, n=30:
+    WSL2 kernel 6.18.33.2, n=30, with the four-probe deep tier (finalize_exec,
+    tcp_sendmsg, inet_csk_accept, security_file_open) of 21 Oct 2026:
 
-        bpf_link attach (deep)      13.73 ms
-        bpf_link destroy (deep)    174.80 ms
-        map update (gate a pid)      0.011 ms
+        bpf_link attach (deep)      26.46 ms
+        bpf_link destroy (deep)    371.08 ms
+        map update (gate a pid)      0.008 ms
 
     Note the asymmetry, which the first version of this model had backwards.
     Detaching a kprobe must unregister it and wait out an RCU grace period;
-    attaching does not. Leaving deep mode is roughly 13x more expensive than
-    entering it, so the minimum dwell time is not merely an anti-flap heuristic
-    -- it has a direct cost justification.
+    attaching does not. The kernel serialises those waits (~95 ms per probe,
+    measured individually), so detach cost grows linearly with the number of
+    deep probes. Leaving deep mode is roughly 14x more expensive than entering
+    it, so the minimum dwell time is not merely an anti-flap heuristic -- it
+    has a direct cost justification.
     """
 
     measured = False
+    enforcement_available = True
 
-    def __init__(self, attach_ms: float = 13.73, detach_ms: float = 174.80,
-                 map_ms: float = 0.011) -> None:
+    def __init__(self, attach_ms: float = 26.46, detach_ms: float = 371.08,
+                 map_ms: float = 0.008) -> None:
         self.attach_ms, self.detach_ms, self.map_ms = attach_ms, detach_ms, map_ms
         self.deep_attached = False
         self._dropped = 0
@@ -71,6 +75,9 @@ class SimulatedBackend:
         return self.map_ms
 
     async def deny_add(self, pid: int, syscall: str) -> float:
+        # Same contract as EbpfBackend: the LSM hook only covers execve.
+        if syscall != "execve":
+            raise ValueError(f"LSM hook denies execve only, not {syscall!r}")
         return self.map_ms
 
     async def deny_del(self, pid: int) -> float:

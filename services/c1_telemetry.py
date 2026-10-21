@@ -29,6 +29,7 @@ from __future__ import annotations
 import csv
 import math
 import os
+import time
 from datetime import datetime
 from typing import Dict, List, Optional, TextIO
 
@@ -95,6 +96,27 @@ def _syscall_result(ev: HostEvent) -> str:
     return NULL
 
 
+_TS_CACHE = [None, ""]
+
+
+def _timestamp(ts: float) -> str:
+    """The schema's timestamps have one-second resolution, so format each
+    second once rather than once per row (strftime was a per-event cost)."""
+    sec = int(ts)
+    if _TS_CACHE[0] != sec:
+        _TS_CACHE[0], _TS_CACHE[1] = sec, datetime.fromtimestamp(sec).strftime(TIME_FORMAT)
+    return _TS_CACHE[1]
+
+
+def _file_operation(ev: HostEvent) -> str:
+    """security_file_open records the open flags in ret; O_ACCMODE says how."""
+    if ev.kind != "file":
+        return NULL
+    if ev.ret is None:
+        return "open"
+    return {0: "open_read", 1: "open_write", 2: "open_readwrite"}.get(ev.ret & 3, "open")
+
+
 def to_row(ev: HostEvent, host_ip: str, theta_up: float,
            theta_down: float) -> Dict[str, object]:
     """One HostEvent as one schema row. Raises ValueError for kinds the schema lacks."""
@@ -120,7 +142,7 @@ def to_row(ev: HostEvent, host_ip: str, theta_up: float,
     label, attack_type = _label(ev)
 
     return {
-        "timestamp": datetime.fromtimestamp(ev.ts).strftime(TIME_FORMAT),
+        "timestamp": _timestamp(ev.ts),
         "host_id": ev.host_id,
         "host_ip": host_ip,
         "process_id": ev.pid,
@@ -133,14 +155,14 @@ def to_row(ev: HostEvent, host_ip: str, theta_up: float,
         "dst_ip": dst_ip or NULL,
         "src_port": "" if src_port is None else src_port,
         "dst_port": "" if dst_port is None else dst_port,
-        "protocol": (ev.proto or "tcp").upper() if network else NULL,
+        "protocol": ev.proto.upper() if network and ev.proto else NULL,
         "syscall_name": syscall or NULL,
         "syscall_result": _syscall_result(ev),
         # Every C1 hook runs in the context of the task that triggered it, so
         # at the moment of capture that task is on-CPU by definition.
         "process_state": "running",
         "memory_alloc_bytes": 0,
-        "file_operation": NULL,
+        "file_operation": _file_operation(ev),
         "threat_confidence_score": round(normalise_confidence(ev.confidence, theta_up), 4),
         "threat_state": "suspicious" if ev.confidence > theta_down else "normal",
         "cpu_usage": NULL if ev.cpu_pct is None else ev.cpu_pct,
@@ -160,12 +182,37 @@ class TelemetryCsvExporter:
         self.theta_up, self.theta_down = theta_up, theta_down
         self.rows = 0
         self.skipped = 0
-        new = not os.path.exists(path) or os.path.getsize(path) == 0
-        self._fh: Optional[TextIO] = open(path, "a", newline="", encoding="utf-8")
-        self._w = csv.DictWriter(self._fh, fieldnames=COLUMNS, lineterminator="\n")
-        if new:
-            self._w.writeheader()
+        self._fh: Optional[TextIO] = None
+        self._last_flush = 0.0
+        self._open()
         bus.subscribe(Topic.HOST_EVENT, self.on_event)
+
+    # A crashed agent may lose at most this much of the tail. Flushing every
+    # row was a write() syscall per event.
+    FLUSH_EVERY_S = 0.1
+
+    def _open(self) -> None:
+        d = os.path.dirname(self.path)
+        if d:
+            os.makedirs(d, exist_ok=True)
+        new = not os.path.exists(self.path) or os.path.getsize(self.path) == 0
+        self._fh = open(self.path, "a", newline="", encoding="utf-8")
+        self._w = csv.writer(self._fh, lineterminator="\n")
+        if new:
+            self._w.writerow(COLUMNS)
+            self._fh.flush()
+
+    def flush(self) -> None:
+        if self._fh is not None:
+            self._fh.flush()
+            self._last_flush = time.monotonic()
+
+    def reopen(self) -> None:
+        """After logrotate moved the file away (SIGHUP): start a new one, with
+        its own header, so every rotated file is a valid C3 input on its own."""
+        if self._fh is not None:
+            self._fh.close()
+        self._open()
 
     async def on_event(self, _topic: str, ev: HostEvent) -> None:
         if self._fh is None:
@@ -176,11 +223,12 @@ class TelemetryCsvExporter:
         except ValueError:
             self.skipped += 1      # e.g. TON_IoT "sample" rows: not a C1 event
             return
-        self._w.writerow(row)
-        # Flushed per row: a crashed or killed agent must not lose the tail of
-        # the telemetry it already reported as emitted.
-        self._fh.flush()
+        self._w.writerow([row[c] for c in COLUMNS])
         self.rows += 1
+        # The status loop also calls flush(), so an idle agent's last rows
+        # reach the file within one status interval.
+        if time.monotonic() - self._last_flush >= self.FLUSH_EVERY_S:
+            self.flush()
 
     def close(self) -> None:
         if self._fh is not None:

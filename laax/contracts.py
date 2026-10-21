@@ -24,9 +24,10 @@ one producer can fill are Optional and every consumer must tolerate None.
 
 from __future__ import annotations
 
+import itertools
+import os
 import time
-import uuid
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field, fields
 from typing import Any, Dict, List, Optional
 
 SCHEMA_VERSION = "0.1.0"
@@ -50,8 +51,25 @@ def _now() -> float:
     return time.time()
 
 
+# Message ids: a random per-process prefix plus a counter. Unique across hosts
+# and restarts like a UUID for every practical purpose, without a getrandom()
+# syscall per telemetry event (uuid4 was a measurable share of per-event cost).
+_ID_PREFIX = os.urandom(4).hex()
+_ID_COUNTER = itertools.count()
+
+
 def _mid() -> str:
-    return uuid.uuid4().hex[:12]
+    return f"{_ID_PREFIX}{next(_ID_COUNTER):x}"
+
+
+_FIELD_NAMES: Dict[type, tuple] = {}
+
+
+def _names(cls: type) -> tuple:
+    names = _FIELD_NAMES.get(cls)
+    if names is None:
+        names = _FIELD_NAMES[cls] = tuple(f.name for f in fields(cls))
+    return names
 
 
 @dataclass
@@ -62,11 +80,22 @@ class Message:
     schema: str = SCHEMA_VERSION
 
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        # One level of copying is all the contracts need: fields are scalars,
+        # lists of scalars, or (CorrelationAlert.path) a list of flat dicts.
+        # dataclasses.asdict deep-copies recursively and cost ~20 us per event.
+        out = {}
+        for name in _names(type(self)):
+            v = getattr(self, name)
+            if isinstance(v, list):
+                v = [dict(x) if isinstance(x, dict) else x for x in v]
+            elif isinstance(v, dict):
+                v = dict(v)
+            out[name] = v
+        return out
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]):
-        known = set(cls.__dataclass_fields__)
+        known = cls.__dataclass_fields__
         return cls(**{k: v for k, v in d.items() if k in known})
 
 
@@ -93,6 +122,9 @@ class HostEvent(Message):
     pid: int = 0
     ppid: int = 0
     comm: str = ""
+    # Path of the binary the kernel executed (exec events). comm is set by the
+    # process itself and can be anything; exe cannot be chosen that way.
+    exe: Optional[str] = None
     # -- event classification ---------------------------------------------
     kind: str = "exec"           # exec | connect | accept | file | sample
     # Two different facts, kept apart. `depth` is the PROCESS's tracing mode when
