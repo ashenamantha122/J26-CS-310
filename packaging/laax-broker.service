@@ -1,0 +1,33 @@
+[Unit]
+Description=LAAX message broker (protobuf over ZeroMQ, CURVE)
+Documentation=https://github.com/ashenamantha122/J26-CS-310
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Needs /etc/laax/curve/server.key_secret and /etc/laax/curve/clients/*.key:
+#   laax-agent keygen /etc/laax/curve --server
+ExecStart=/usr/bin/laax-broker --transport zmq --curve-dir /etc/laax/curve
+Restart=on-failure
+RestartSec=5
+DynamicUser=yes
+# DynamicUser cannot read a root-owned 0600 key; the secret is handed over via
+# systemd's credential store instead of loosening its file mode.
+LoadCredential=server.key_secret:/etc/laax/curve/server.key_secret
+Environment=LAAX_CURVE_SECRET=%d/server.key_secret
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+# AF_NETLINK: ZeroMQ resolves addresses via getifaddrs(), which uses netlink.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+CapabilityBoundingSet=
+MemoryMax=256M
+
+[Install]
+WantedBy=multi-user.target

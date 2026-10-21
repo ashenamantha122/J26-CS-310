@@ -1,0 +1,22 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    remove)
+        if [ -d /run/systemd/system ]; then
+            systemctl daemon-reload >/dev/null 2>&1 || true
+        fi
+        rm -rf /run/laax
+        ;;
+    purge)
+        rm -rf /run/laax
+        # Keys are removed with the configuration on purge. Telemetry and the
+        # audit log are forensic records and are left for the operator.
+        rm -rf /etc/laax/curve
+        if [ -d /var/log/laax ]; then
+            echo "laax-agent purged; /var/log/laax (telemetry, audit log) left in place."
+        fi
+        ;;
+esac
+
+exit 0

@@ -1,0 +1,57 @@
+[Unit]
+Description=LAAX adaptive eBPF endpoint agent (Component 1)
+Documentation=https://github.com/ashenamantha122/J26-CS-310
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=120
+StartLimitBurst=5
+
+[Service]
+Type=simple
+# The active-LSM list is in securityfs, which some systems (WSL2) do not mount.
+# "+" runs this one step with full privileges, outside the sandbox below.
+ExecStartPre=+/bin/sh -c 'mountpoint -q /sys/kernel/security || mount -t securityfs securityfs /sys/kernel/security || true'
+ExecStart=/usr/bin/laax-agent run --config /etc/laax/agent.conf
+ExecReload=/bin/kill -HUP $MAINPID
+EnvironmentFile=-/etc/laax/agent.env
+# The agent refuses to run on synthetic data when the kernel side is missing,
+# so a broken host shows as a failed unit instead of a healthy-looking one.
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=15
+
+# --- privilege: root, but only the capabilities eBPF needs ----------------
+User=root
+CapabilityBoundingSet=CAP_BPF CAP_PERFMON CAP_SYS_ADMIN CAP_SYS_RESOURCE
+AmbientCapabilities=CAP_BPF CAP_PERFMON CAP_SYS_ADMIN CAP_SYS_RESOURCE
+LimitMEMLOCK=infinity
+
+# --- sandbox -----------------------------------------------------------------
+RuntimeDirectory=laax
+RuntimeDirectoryMode=0755
+LogsDirectory=laax
+LogsDirectoryMode=0750
+ConfigurationDirectory=laax
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RestrictNamespaces=yes
+SystemCallArchitectures=native
+# AF_NETLINK: ZeroMQ resolves addresses via getifaddrs(), which uses netlink.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+UMask=0027
+
+# --- resource limits: the agent must never be what takes the host down -----
+MemoryMax=512M
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

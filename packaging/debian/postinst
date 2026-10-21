@@ -1,0 +1,27 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    configure)
+        install -d -m 0750 /var/log/laax
+        # 0755 so the broker's DynamicUser can read clients/*.key; the secret
+        # keys inside are 0600 on their own.
+        install -d -m 0755 /etc/laax/curve /etc/laax/curve/clients
+        if [ -d /run/systemd/system ]; then
+            systemctl daemon-reload >/dev/null 2>&1 || true
+        fi
+        # Not started automatically. A security agent should not begin
+        # learning its baseline, or enforcing, before an operator has checked
+        # that the kernel supports it and that the configuration is right.
+        cat <<'EOF'
+
+laax-agent installed. Next:
+  sudo laax-agent check --config /etc/laax/agent.conf
+  sudo systemctl enable --now laax-agent
+  laax-agent status
+Logs: journalctl -u laax-agent; telemetry and audit log in /var/log/laax/
+EOF
+        ;;
+esac
+
+exit 0

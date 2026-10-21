@@ -1,0 +1,19 @@
+Package: laax-agent
+Version: @VERSION@
+Section: admin
+Priority: optional
+Architecture: @ARCH@
+Maintainer: Amantha M.A <it23184312@my.sliit.lk>
+Depends: python3 (>= 3.10), libbpf1, libelf1t64 | libelf1, zlib1g
+Recommends: python3-zmq, python3-protobuf
+Installed-Size: @SIZE@
+Homepage: https://github.com/ashenamantha122/J26-CS-310
+Description: LAAX adaptive eBPF endpoint agent (Component 1)
+ Endpoint agent for managed Linux hosts in the LAAX hybrid enterprise-IoT XDR
+ framework. Runs light tracepoints continuously and attaches deep kprobes per
+ process when a threat confidence score crosses a threshold, without restart.
+ Exports telemetry to the correlation engine (CSV, or Protocol Buffers over
+ ZeroMQ with CURVE), accepts execve denials from the containment controller
+ through an eBPF LSM hook, and keeps a hash-chained audit log.
+ .
+ Research prototype, SLIIT project J26-CS-310.

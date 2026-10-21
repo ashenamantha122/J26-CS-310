@@ -1,0 +1,19 @@
+# LAAX telemetry export (C3 schema). High volume: rotate daily, keep a week.
+# The agent reopens the file on SIGHUP and writes a fresh header, so every
+# rotated file is a valid C3 input on its own.
+#
+# The audit log (audit.jsonl) is deliberately NOT rotated: it is low-volume and
+# its hash chain spans one file. Archive it by copying, never by truncating.
+/var/log/laax/telemetry.csv {
+    daily
+    rotate 7
+    maxsize 200M
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 root root
+    postrotate
+        systemctl kill -s HUP --kill-whom=main laax-agent.service 2>/dev/null || true
+    endscript
+}

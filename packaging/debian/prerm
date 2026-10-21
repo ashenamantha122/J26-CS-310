@@ -1,0 +1,21 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    remove|deconfigure)
+        if [ -d /run/systemd/system ]; then
+            systemctl stop laax-agent.service laax-broker.service >/dev/null 2>&1 || true
+            systemctl disable laax-agent.service laax-broker.service >/dev/null 2>&1 || true
+        fi
+        ;;
+    upgrade)
+        # Keep the old agent running until the new files are in place; the
+        # postinst of the new version does not restart it on its own.
+        ;;
+esac
+
+# Bytecode Python wrote at run time is not in the package's file list, so dpkg
+# would leave /usr/lib/laax behind on removal and keep stale .pyc on upgrade.
+find /usr/lib/laax -type d -name __pycache__ -prune -exec rm -rf {} + 2>/dev/null || true
+
+exit 0
