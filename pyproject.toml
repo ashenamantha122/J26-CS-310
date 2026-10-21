@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "laax-agent"
+version = "0.2.0"
+description = "Adaptive eBPF-Based Lightweight Endpoint Agent for Hybrid Enterprise-IoT XDR"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    { name = "Amantha M.A", email = "it23184312@my.sliit.lk" }
+]
+dependencies = []
+
+[project.optional-dependencies]
+full = ["networkx>=3.0", "torch>=2.0"]
+zmq = ["pyzmq>=24", "protobuf>=3.20"]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+laax-agent = "laax_agent:cli_entry"
+laax-broker = "run_broker:cli_entry"
+laax-benchmark = "benchmark_overhead:cli_entry"

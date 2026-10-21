@@ -1,0 +1,24 @@
+[Unit]
+Description=LAAX Adaptive eBPF Endpoint Agent (Component 1)
+Documentation=https://github.com/ashenamantha122/J26-CS-310
+After=network.target
+
+[Service]
+Type=simple
+User=root
+# @LAAX_AGENT@ is replaced by install.sh with the installed entry point.
+ExecStart=@LAAX_AGENT@ --config /etc/laax/agent.conf
+# Bus token for --bus tcp, kept out of the world-readable unit file.
+EnvironmentFile=-/etc/laax/agent.env
+# The agent refuses to run on synthetic data when the eBPF side is missing, so
+# a broken kernel setup shows as a failed unit instead of a healthy-looking one.
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=5
+LimitMEMLOCK=infinity
+CapabilityBoundingSet=CAP_BPF CAP_PERFMON CAP_SYS_ADMIN CAP_SYS_RESOURCE
+AmbientCapabilities=CAP_BPF CAP_PERFMON CAP_SYS_ADMIN CAP_SYS_RESOURCE
+
+[Install]
+WantedBy=multi-user.target
