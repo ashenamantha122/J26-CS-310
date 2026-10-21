@@ -1,4 +1,27 @@
-captured: 2026-09-01 20:06:32
+captured: 2026-10-21 11:33:24
 command:  python3 run_live.py --calibrate --iterations 30
 
-cannot start loader: loader did not become ready: sudo: a password is required
+  loader ready (lsm=off); light mode attached, deep mode loaded but NOT attached
+
+  warming up (one attach/detach pair, discarded)
+  1/30  2/30  3/30  4/30  5/30  6/30  7/30  8/30  9/30  10/30  11/30  12/30  13/30  14/30  15/30  16/30  17/30  18/30  19/30  20/30  21/30  22/30  23/30  24/30  25/30  26/30  27/30  28/30  29/30  30/30
+
+  operation                     n      mean    median       p95       max
+  bpf_link attach (deep)       30   12.7267   11.7704   26.7909   30.0042   ms
+  bpf_link destroy (deep)      30  377.8191  375.6690  404.1661  405.3704   ms
+  map update (gate a pid)      30    0.0052    0.0041    0.0111    0.0239   ms
+
+  switch latency budget      500.0000 ms
+  worst attach (-> deep)      30.0042 ms   PASS    16.7x headroom
+  worst detach (-> light)    405.3704 ms   PASS     1.2x headroom
+  worst switch, either way   405.3704 ms   PASS
+
+  NOTE: detach costs 29.7x attach. Detaching a kprobe has to
+  unregister it and wait out an RCU grace period, which attaching does
+  not. Two consequences worth stating in the thesis:
+    - min_dwell_s is not only an anti-flap device; leaving deep mode is
+      the expensive direction, so dwell has a direct cost justification.
+    - the honest headline is the worse direction, not the attach number.
+
+  These are measurements. SimulatedBackend in laax/backend.py has been
+  set from medians like these; re-run and update it if the kernel changes.

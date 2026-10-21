@@ -1,0 +1,15 @@
+captured: 2026-10-16 22:47:47
+command:  python3 scenario/test_lsm.py
+
+
+  eBPF LSM enforcement -- lsm/bprm_check_security
+  marker binary: /tmp/lxmd37948
+
+  no policy -> exec allowed          root pid 735     allowed  PASS  (no policy)
+  denial armed -> exec refused       root pid 737     DENIED   PASS  (map write 0.0059ms)
+  denial lifted -> exec allowed      root pid 739     allowed  PASS  (no policy)
+
+  all three cases behaved as specified
+  The shell that spawned the target was never signalled and never
+  terminated: the denial refused one execve and nothing else.
+  That is the surgical-containment claim, demonstrated.

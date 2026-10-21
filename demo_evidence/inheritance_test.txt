@@ -1,0 +1,14 @@
+captured: 2026-10-21 11:33:41
+command:  python3 scenario/test_inheritance.py
+
+
+  Fork inheritance, exit cleanup and the deep tier on a live kernel
+
+  1 deep: forked child's exec captured           PASS  argv=['/bin/echo', 'laax', 'child-arg', 'two words']
+    ...with argv entries intact                  PASS  
+  2 deep: accept + send + file-open events       PASS  kinds=['accept', 'connect', 'file'] hostname_seen=True
+  3 lsm: denied process's forked child refused   PASS  child exec -> EPERM
+  4 lsm: after release the fork+exec is allowed  PASS  child exec -> rc=0
+  5 exit: denied_pids entry removed on exit      PASS  in map before exit=True, after=False
+
+  all cases behaved as specified

@@ -1,5 +1,15 @@
-captured: 2026-09-01 20:06:42
+captured: 2026-10-21 11:33:40
 command:  python3 scenario/test_lsm.py
 
-cannot start loader with --lsm: loader did not become ready: sudo: a password is required
-check: cat /sys/kernel/security/lsm   (needs 'bpf')
+
+  eBPF LSM enforcement -- lsm/bprm_check_security
+  marker binary: /tmp/lxm8e3c8d
+
+  no policy -> exec allowed          root pid 744     allowed  PASS  (no policy)
+  denial armed -> exec refused       root pid 746     DENIED   PASS  (map write 0.0066ms)
+  denial lifted -> exec allowed      root pid 748     allowed  PASS  (no policy)
+
+  all three cases behaved as specified
+  The shell that spawned the target was never signalled and never
+  terminated: the denial refused one execve and nothing else.
+  That is the surgical-containment claim, demonstrated.

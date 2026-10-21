@@ -1,0 +1,19 @@
+captured: 2026-10-21 11:35:25
+
+command:  python3 benchmarks/transport_throughput.py --events 100000 
+  transport            protobuf over ZeroMQ, CURVE on, 3 processes
+  events sent          100000
+  events received      100000
+  publish rate         54,188 events/s
+  end-to-end rate      28,114 events/s
+  loss                 0.000 %
+  NFR6 (>= 10,000 events/s, no loss)   PASS
+
+command:  python3 benchmarks/transport_throughput.py --events 100000 --no-curve
+  transport            protobuf over ZeroMQ, CURVE off, 3 processes
+  events sent          100000
+  events received      100000
+  publish rate         51,287 events/s
+  end-to-end rate      29,161 events/s
+  loss                 0.000 %
+  NFR6 (>= 10,000 events/s, no loss)   PASS

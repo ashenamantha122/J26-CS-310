@@ -1,0 +1,53 @@
+captured: 2026-10-21 11:34:12
+command:  python3 benchmarks/kernel_overhead.py --runs 10
+
+  kernel 6.18.33.2-microsoft-standard-WSL2; 16 CPUs
+
+== 1. workload slowdown, 10 interleaved runs per configuration
+
+  per operation                        off                     light                deep-gated                      deep
+  exec                  442.69 ±  85.49 us        458.96 ± 118.87 us        429.54 ±  62.37 us        436.24 ±  33.97 us
+  connect                29.00 ±  10.12 us         25.21 ±   6.16 us         26.82 ±   4.24 us         24.39 ±   2.70 us
+  open                    4.04 ±   1.50 us          3.25 ±   0.34 us          3.84 ±   0.57 us          3.74 ±   0.48 us
+
+  overhead vs off                       off                     light                deep-gated                      deep
+  exec                               +0.0%                     +3.7%                     -3.0%                     -1.5%
+  connect                            +0.0%                    -13.1%                     -7.5%                    -15.9%
+  open                               +0.0%                    -19.5%                     -5.0%                     -7.4%
+
+== 2. per-program cost (kernel.bpf_stats_enabled)
+
+  program                calls   mean ns/call   total ms
+  laax_connect            2000            326       0.65
+  laax_deep_accept        2000            234       0.47
+  laax_deep_exec          1001            917       0.92
+  laax_deep_file         25031            275       6.89
+  laax_deep_send          2000            192       0.38
+  laax_deny_exec          1003            174       0.17
+  laax_exec               1003            342       0.34
+  laax_exit               1002            800       0.80
+  laax_fork               1003           1112       1.12
+  (workload process in deep mode, so every deep program fired for it)
+
+== 3. event loss during mode transitions
+
+  execs by the workload        3000
+  mode transitions meanwhile   4
+  light exec events received   3000
+  deep exec events (while attached) 953
+  ring-buffer drops            0
+  event loss                   0.000 %   PASS (budget < 1 %)
+
+== 4. delivery delay and idle cost
+
+  exec events measured          1000
+  delivery delay p50 / p95 / max   5.69 / 10.32 / 11.05 ms
+  loader CPU while idle (20 s)   0.450 % of one core
+
+== 5. user-space pipeline cost per event
+
+  events through the agent      1000  (1000 execs, 0 mode switches, baseline learned first)
+  python agent CPU                  72.5 us / event
+  loader CPU (ring buffer+JSON)     10.0 us / event
+  total user space                  82.5 us / event
+  at the measured rate (599 events/s): 4.9 % of one core

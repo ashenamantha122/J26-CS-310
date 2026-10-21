@@ -1,0 +1,6 @@
+  BPF     laax.bpf.o
+clang -O2 -g -target bpf -D__TARGET_ARCH_x86 -Wall -c laax.bpf.c -o laax.bpf.o
+  SKEL    laax.skel.h
+bpftool gen skeleton laax.bpf.o > laax.skel.h
+  CC      laax-loader
+clang -O2 -g -Wall loader.c -o laax-loader -lbpf -lelf -lz

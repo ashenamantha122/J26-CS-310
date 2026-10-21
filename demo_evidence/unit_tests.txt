@@ -1,0 +1,81 @@
+captured: 2026-10-21 11:35:38
+command:  python3 -m unittest discover -s tests -v
+
+test_external_alert_boost (test_c1_agent_lifecycle.AgentLifecycleTests.test_external_alert_boost) ... ok
+test_lsm_enforce_and_timed_expiry (test_c1_agent_lifecycle.AgentLifecycleTests.test_lsm_enforce_and_timed_expiry) ... ok
+test_mode_controller_hysteresis (test_c1_agent_lifecycle.AgentLifecycleTests.test_mode_controller_hysteresis) ... ok
+test_process_tree_inheritance (test_c1_agent_lifecycle.AgentLifecycleTests.test_process_tree_inheritance) ... ok
+test_rarity_learning_and_freeze (test_c1_agent_lifecycle.AgentLifecycleTests.test_rarity_learning_and_freeze) ... ok
+test_chain_verifies_and_survives_restart (test_c1_hardening.AuditTests.test_chain_verifies_and_survives_restart) ... ok
+test_deleting_a_line_is_detected (test_c1_hardening.AuditTests.test_deleting_a_line_is_detected) ... ok
+test_edit_is_detected (test_c1_hardening.AuditTests.test_edit_is_detected) ... ok
+test_right_token_delivers (test_c1_hardening.BusAuthTests.test_right_token_delivers) ... /usr/lib/python3.12/asyncio/streams.py:416: ResourceWarning: unclosed <StreamWriter transport=<_SelectorSocketTransport closing fd=9 read=idle write=<idle, bufsize=0>> reader=<StreamReader transport=<_SelectorSocketTransport closing fd=9 read=idle write=<idle, bufsize=0>>>>
+  warnings.warn(f"unclosed {self!r}", ResourceWarning)
+/usr/lib/python3.12/asyncio/streams.py:416: ResourceWarning: unclosed <StreamWriter transport=<_SelectorSocketTransport closing fd=7 read=idle write=<idle, bufsize=0>> reader=<StreamReader transport=<_SelectorSocketTransport closing fd=7 read=idle write=<idle, bufsize=0>>>>
+  warnings.warn(f"unclosed {self!r}", ResourceWarning)
+ok
+test_wrong_token_is_disconnected (test_c1_hardening.BusAuthTests.test_wrong_token_is_disconnected) ... ok
+test_bool_is_not_a_threshold (test_c1_hardening.ConfigTests.test_bool_is_not_a_threshold) ... ok
+test_cli_overrides_config (test_c1_hardening.ConfigTests.test_cli_overrides_config) ... ok
+test_inverted_hysteresis_is_rejected (test_c1_hardening.ConfigTests.test_inverted_hysteresis_is_rejected) ... ok
+test_shipped_config_loads_and_validates (test_c1_hardening.ConfigTests.test_shipped_config_loads_and_validates) ... ok
+test_unknown_key_is_an_error (test_c1_hardening.ConfigTests.test_unknown_key_is_an_error) ... ok
+test_inherited_denial_is_released_with_the_policy (test_c1_hardening.EnforcementTests.test_inherited_denial_is_released_with_the_policy) ... ok
+test_overlapping_leases_first_expiry_does_not_lift_second (test_c1_hardening.EnforcementTests.test_overlapping_leases_first_expiry_does_not_lift_second) ... ok
+test_pid_never_reported_by_c1_is_refused (test_c1_hardening.EnforcementTests.test_pid_never_reported_by_c1_is_refused) ... ok
+test_rollback_releases_early (test_c1_hardening.EnforcementTests.test_rollback_releases_early) ... ok
+test_unsupported_syscall_is_refused_not_armed_as_execve (test_c1_hardening.EnforcementTests.test_unsupported_syscall_is_refused_not_armed_as_execve) ... ok
+test_argv_is_split_on_the_separator (test_c1_hardening.KernelParsingTests.test_argv_is_split_on_the_separator) ... ok
+test_file_event_row (test_c1_hardening.KernelParsingTests.test_file_event_row) ... ok
+test_fork_is_lifecycle_not_a_kprobe (test_c1_hardening.KernelParsingTests.test_fork_is_lifecycle_not_a_kprobe) ... ok
+test_burst_of_short_deep_processes_shares_one_attach (test_c1_hardening.LifecycleTests.test_burst_of_short_deep_processes_shares_one_attach) ... ok
+test_exit_while_deep_keeps_probes_until_dwell_then_forgets (test_c1_hardening.LifecycleTests.test_exit_while_deep_keeps_probes_until_dwell_then_forgets) ... ok
+test_fork_inherits_deep_without_a_second_attach (test_c1_hardening.LifecycleTests.test_fork_inherits_deep_without_a_second_attach) ... ok
+test_promotion_during_detach_keeps_probes_attached (test_c1_hardening.LifecycleTests.test_promotion_during_detach_keeps_probes_attached) ... ok
+test_recycled_pid_starts_clean (test_c1_hardening.LifecycleTests.test_recycled_pid_starts_clean) ... ok
+test_reused_pid_closes_old_deep_window_without_touching_gate (test_c1_hardening.LifecycleTests.test_reused_pid_closes_old_deep_window_without_touching_gate) ... ok
+test_kprobe_events_do_not_move_confidence (test_c1_hardening.ScoringTests.test_kprobe_events_do_not_move_confidence) ... ok
+test_agent_output_conforms_and_shows_the_mode_switch (test_c1_telemetry.AgentExportTests.test_agent_output_conforms_and_shows_the_mode_switch) ... ok
+test_clean_rows_pass (test_c1_telemetry.CheckerTests.test_clean_rows_pass) ... ok
+test_kprobe_in_light_mode_is_flagged (test_c1_telemetry.CheckerTests.test_kprobe_in_light_mode_is_flagged) ... ok
+test_wrong_header_is_flagged (test_c1_telemetry.CheckerTests.test_wrong_header_is_flagged) ... ok
+test_xdp_is_never_valid (test_c1_telemetry.CheckerTests.test_xdp_is_never_valid) ... ok
+test_accept_puts_remote_peer_in_src (test_c1_telemetry.SchemaTests.test_accept_puts_remote_peer_in_src) ... ok
+test_columns_match_reference_header (test_c1_telemetry.SchemaTests.test_columns_match_reference_header) ... ok
+test_connect_falls_back_to_host_ip_and_leaves_unknown_port_empty (test_c1_telemetry.SchemaTests.test_connect_falls_back_to_host_ip_and_leaves_unknown_port_empty) ... ok
+test_ground_truth_only_when_supplied (test_c1_telemetry.SchemaTests.test_ground_truth_only_when_supplied) ... ok
+test_light_exec_row (test_c1_telemetry.SchemaTests.test_light_exec_row) ... ok
+test_negative_ret_is_failure (test_c1_telemetry.SchemaTests.test_negative_ret_is_failure) ... ok
+test_timestamp_format (test_c1_telemetry.SchemaTests.test_timestamp_format) ... ok
+test_unknown_kind_is_rejected (test_c1_telemetry.SchemaTests.test_unknown_kind_is_rejected) ... ok
+test_unknown_protocol_is_not_guessed (test_c1_telemetry.SchemaTests.test_unknown_protocol_is_not_guessed) ... ok
+test_bounds_and_anchor (test_c1_telemetry.ScoreTests.test_bounds_and_anchor) ... ok
+test_monotonic_so_thresholds_survive (test_c1_telemetry.ScoreTests.test_monotonic_so_thresholds_survive) ... ok
+test_threat_state_follows_lower_threshold (test_c1_telemetry.ScoreTests.test_threat_state_follows_lower_threshold) ... ok
+test_bad_config_is_rc2 (test_cli.CommandTests.test_bad_config_is_rc2) ... ok
+test_keygen_server_then_client_and_no_overwrite (test_cli.CommandTests.test_keygen_server_then_client_and_no_overwrite) ... ok
+test_status_reports_running_for_live_pid_and_stale_otherwise (test_cli.CommandTests.test_status_reports_running_for_live_pid_and_stale_otherwise) ... ok
+test_status_without_agent_is_rc3 (test_cli.CommandTests.test_status_without_agent_is_rc3) ... ok
+test_verify_audit (test_cli.CommandTests.test_verify_audit) ... ok
+test_version (test_cli.CommandTests.test_version) ... ok
+test_without_lsm_requests_are_refused_and_recorded (test_cli.DegradedEnforcementTests.test_without_lsm_requests_are_refused_and_recorded) ... ok
+test_agent_takes_c4_orders_and_feeds_c3_over_curve (test_transport.AgentOverZmqTests.test_agent_takes_c4_orders_and_feeds_c3_over_curve) ... ok
+test_correlation_path_survives (test_transport.CodecTests.test_correlation_path_survives) ... ok
+test_every_contract_field_has_a_proto_field (test_transport.CodecTests.test_every_contract_field_has_a_proto_field) ... ok
+test_garbage_is_a_codec_error_not_a_crash (test_transport.CodecTests.test_garbage_is_a_codec_error_not_a_crash) ... ok
+test_host_event_round_trip_keeps_none_and_values_apart (test_transport.CodecTests.test_host_event_round_trip_keeps_none_and_values_apart) ... ok
+test_protobuf_is_smaller_than_json (test_transport.CodecTests.test_protobuf_is_smaller_than_json) ... ok
+test_round_trip_every_topic_with_defaults (test_transport.CodecTests.test_round_trip_every_topic_with_defaults) ... ok
+test_world_readable_secret_is_refused (test_transport.KeyFileTests.test_world_readable_secret_is_refused) ... ok
+test_curve_allowed_clients_deliver (test_transport.ZmqBusTests.test_curve_allowed_clients_deliver) ... Executing <Task finished name='Task-149' coro=<ZmqBusTests.test_curve_allowed_clients_deliver() done, defined at /mnt/e/Accepted RP/Prototype/tests/test_transport.py:136> result=None created at /usr/lib/python3.12/asyncio/runners.py:100> took 0.116 seconds
+ok
+test_curve_unknown_publisher_cannot_command_the_agent (test_transport.ZmqBusTests.test_curve_unknown_publisher_cannot_command_the_agent) ... ok
+test_mode_change_round_trips_over_the_wire (test_transport.ZmqBusTests.test_mode_change_round_trips_over_the_wire) ... Executing <Task finished name='Task-161' coro=<ZmqBusTests.test_mode_change_round_trips_over_the_wire() done, defined at /mnt/e/Accepted RP/Prototype/tests/test_transport.py:156> result=None created at /usr/lib/python3.12/asyncio/runners.py:100> took 0.105 seconds
+ok
+test_plain_delivery_and_exact_topic_match (test_transport.ZmqBusTests.test_plain_delivery_and_exact_topic_match) ... ok
+test_plaintext_client_cannot_reach_a_curve_broker (test_transport.ZmqBusTests.test_plaintext_client_cannot_reach_a_curve_broker) ... ok
+
+----------------------------------------------------------------------
+Ran 67 tests in 8.255s
+
+OK

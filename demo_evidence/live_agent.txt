@@ -1,4 +1,71 @@
-captured: 2026-09-01 20:06:52
-command:  live_probe.sh 12 & run_live.py --lsm --baseline 12 --seconds 16
+captured: 2026-10-21 11:33:43
+command:  live_probe.sh 12 READY & run_live.py --lsm --baseline 12 --seconds 16 --ready-file READY --audit demo_evidence/live_audit.jsonl --export demo_evidence/live_telemetry.csv
 
-cannot start loader: loader did not become ready: sudo: a password is required
+  loader ready (lsm=on); light mode attached, deep mode loaded but NOT attached
+
+  exporting C3 telemetry to /mnt/e/Accepted RP/Prototype/demo_evidence/live_telemetry.csv
+  C3 not loaded (networkx missing) -- running C1 only
+  learning the baseline for 12s -- run ordinary work now
+  baseline frozen: 4 lineage pairs, 0 egress pairs
+  watching for 16s -- try: bash -c 'nc -l 9999 &' or an unusual process chain
+  [C1] >> pid 1051 (whoami) light -> DEEP  conf=11.26  kprobe attach=8.327ms  [rarity]
+  [C1] >> pid 1052 (uname) light -> DEEP  conf=11.26  map update=0.005ms  [rarity]
+  [C1] >> pid 1050 (bash) light -> DEEP  conf=13.25  map update=0.004ms  [rarity]
+  [C1] >> pid 1054 (nohup) light -> DEEP  conf=11.26  map update=0.005ms  [rarity]
+  [C1] >> pid 1055 (python3) light -> DEEP  conf=12.52  map update=0.005ms  [inherited]
+  [C1] >> pid 1057 (chmod) light -> DEEP  conf=11.26  map update=0.005ms  [rarity]
+  [C1] >> pid 1058 (bash) light -> DEEP  conf=13.25  map update=0.009ms  [rarity]
+  [C1] << pid 1050 (bash) deep -> light  conf=0.37  map update=0.000ms  [exit]
+  [C1] << pid 1051 (whoami) deep -> light  conf=0.32  map update=0.000ms  [exit]
+  [C1] << pid 1052 (uname) deep -> light  conf=0.32  map update=0.000ms  [exit]
+  [C1] << pid 1054 (nohup) deep -> light  conf=0.50  map update=0.000ms  [exit]
+  [C1] << pid 1055 (python3) deep -> light  conf=0.54  map update=0.000ms  [exit]
+  [C1] >> pid 1060 (bash) light -> DEEP  conf=13.25  map update=0.006ms  [rarity]
+  [C1] >> pid 1062 (bash) light -> DEEP  conf=13.25  map update=0.005ms  [rarity]
+  [C1] >> pid 1064 (bash) light -> DEEP  conf=13.25  map update=0.005ms  [rarity]
+  [C1] >> pid 1066 (bash) light -> DEEP  conf=13.25  map update=0.006ms  [rarity]
+  [C1] >> pid 1070 (whoami) light -> DEEP  conf=11.26  map update=0.006ms  [rarity]
+  [C1] >> pid 1072 (id) light -> DEEP  conf=11.26  map update=0.011ms  [rarity]
+  [C1] >> pid 1075 (uname) light -> DEEP  conf=11.26  map update=0.012ms  [rarity]
+  [C1] >> pid 1077 (head) light -> DEEP  conf=11.26  map update=0.005ms  [rarity]
+  [C1] >> pid 1078 (base64) light -> DEEP  conf=11.26  map update=0.004ms  [rarity]
+  [C1] >> pid 1069 (bash) light -> DEEP  conf=13.25  map update=0.003ms  [rarity]
+  [C1] << pid 1057 (chmod) deep -> light  conf=0.32  map update=0.000ms  [exit]
+  [C1] << pid 1058 (bash) deep -> light  conf=0.37  map update=0.000ms  [exit]
+  [C1] << pid 1060 (bash) deep -> light  conf=0.37  map update=0.000ms  [exit]
+  [C1] << pid 1062 (bash) deep -> light  conf=0.37  map update=0.000ms  [exit]
+  [C1] << pid 1064 (bash) deep -> light  conf=0.62  map update=0.000ms  [exit]
+  [C1] << pid 1066 (bash) deep -> light  conf=0.37  map update=0.000ms  [exit]
+  [C1] << pid 1070 (whoami) deep -> light  conf=0.32  map update=0.000ms  [exit]
+  [C1] << pid 1072 (id) deep -> light  conf=0.32  map update=0.000ms  [exit]
+  [C1] << pid 1075 (uname) deep -> light  conf=0.32  map update=0.000ms  [exit]
+  [C1] << pid 1069 (bash) deep -> light  conf=0.37  map update=0.000ms  [exit]
+  [C1] << pid 1077 (head) deep -> light  conf=0.32  map update=0.000ms  [exit]
+  [C1] << pid 1078 (base64) deep -> light  conf=0.32  kprobe detach=373.739ms  [exit]
+
+  Component 1 on a live kernel
+    events_emitted               455
+    processes_tracked            0
+    mode_switches                34
+    kprobe_attach_events         1
+    kprobe_detach_events         1
+    duty_cycle_pct               33.88
+    attach_latency_ms_mean       8.327
+    attach_latency_ms_max        8.327
+    detach_latency_ms_mean       373.739
+    detach_latency_ms_max        373.739
+    worst_switch_ms              373.739
+    map_update_ms_mean           0.0031
+    deep_payloads_suppressed     0
+    deep_payloads_captured       145
+    lsm_denials_armed            0
+    lsm_policies_active          0
+    audit_records                34
+    latency_source               measured
+    ring_buffer_drops            0
+    c3_telemetry_rows            455  -> /mnt/e/Accepted RP/Prototype/demo_evidence/live_telemetry.csv
+    event_loss_pct               0.0000  (budget: 1%)
+    audit_records                34  -> /mnt/e/Accepted RP/Prototype/demo_evidence/live_audit.jsonl
+
+audit chain:  intact: 34 records, head a62731e2641f8604
+C3 schema:    conforms: schema and tracing-mode rules hold for every row

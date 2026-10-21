@@ -1,0 +1,14 @@
+captured: 2026-10-21 12:24:19
+command:  python3 benchmarks/kernel_overhead.py --part memory --runs 3
+
+  kernel 6.18.33.2-microsoft-standard-WSL2; 16 CPUs
+
+== 6. peak memory, light vs deep (3 fresh processes each)
+
+  (KiB, mean of 3)                 light        deep   deep vs light
+  agent peak RSS (Python)         27,429      28,717           +4.7%
+  loader peak RSS                 16,301      16,319           +0.1%
+  BPF maps (kernel)                4,529       4,529           +0.0%
+  BPF programs (kernel)               32          32           +0.0%
+  total                           48,292      49,597           +2.7%   PASS (target: deep within 10% of light)
+  events processed                13,881      19,002

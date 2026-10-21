@@ -1,0 +1,32 @@
+captured: 2026-10-21 11:35:47
+== build
+== install
+  PASS  package installed
+  PASS  laax-agent on PATH
+  PASS  preflight passes
+== service
+  PASS  service active
+  PASS  status reports running
+  PASS  status readable unprivileged
+  PASS  telemetry written
+== log rotation
+  PASS  rotated file exists
+  PASS  new file starts with the C3 header
+  PASS  new file receives rows
+== CURVE broker + agent over ZeroMQ
+  PASS  broker active
+  PASS  agent on CURVE bus
+  PASS  allowed subscriber received telemetry (43 events)
+  PASS  unlisted key received nothing (0 events)
+== stop
+  PASS  clean stop in 372 ms
+  PASS  audit chain intact
+== purge
+  PASS  removed /usr/bin/laax-agent
+  PASS  removed /usr/lib/laax
+  PASS  removed /etc/laax
+  PASS  removed /lib/systemd/system/laax-agent.service
+  PASS  removed /run/laax
+  PASS  logs kept for the operator
+
+  22 passed, 0 failed

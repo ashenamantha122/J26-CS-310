@@ -1,0 +1,41 @@
+captured: 2026-10-16 22:47:48
+command:  live_probe.sh 12 & run_live.py --lsm --baseline 12 --seconds 16
+
+  loader ready (lsm=on); light mode attached, deep mode loaded but NOT attached
+
+  C3 not loaded (networkx missing) -- running C1 only
+  learning the baseline for 12s -- run ordinary work now
+  baseline frozen: 11 lineage pairs, 0 egress pairs
+  watching for 16s -- try: bash -c 'nc -l 9999 &' or an unusual process chain
+  [C1] >> pid 1020 (chmod) light -> DEEP  conf=9.13  kprobe attach=10.543ms  [rarity]
+  [C1] >> pid 1021 (bash) light -> DEEP  conf=10.33  map update=0.009ms  [rarity]
+  [C1] >> pid 1023 (bash) light -> DEEP  conf=10.33  map update=0.009ms  [rarity]
+  [C1] >> pid 1025 (bash) light -> DEEP  conf=10.33  map update=0.009ms  [rarity]
+  [C1] >> pid 1027 (bash) light -> DEEP  conf=10.33  map update=0.037ms  [rarity]
+  [C1] >> pid 1029 (bash) light -> DEEP  conf=10.33  map update=0.014ms  [rarity]
+  [C1] << pid 1020 (chmod) deep -> light  conf=0.26  map update=0.020ms  [decay]
+  [C1] << pid 1021 (bash) deep -> light  conf=0.29  map update=0.007ms  [decay]
+  [C1] << pid 1023 (bash) deep -> light  conf=0.29  map update=0.141ms  [decay]
+  [C1] << pid 1025 (bash) deep -> light  conf=0.29  map update=0.009ms  [decay]
+  [C1] << pid 1027 (bash) deep -> light  conf=0.29  map update=0.018ms  [decay]
+  [C1] << pid 1029 (bash) deep -> light  conf=0.29  kprobe detach=180.629ms  [decay]
+
+  Component 1 on a live kernel
+    events_emitted               277
+    processes_tracked            270
+    mode_switches                12
+    kprobe_attach_events         1
+    kprobe_detach_events         1
+    duty_cycle_pct               14.76
+    attach_latency_ms_mean       10.543
+    attach_latency_ms_max        10.543
+    detach_latency_ms_mean       180.629
+    detach_latency_ms_max        180.629
+    worst_switch_ms              180.629
+    map_update_ms_mean           0.0275
+    deep_payloads_suppressed     277
+    deep_payloads_captured       0
+    lsm_denials_armed            0
+    latency_source               measured
+    ring_buffer_drops            0
+    event_loss_pct               0.0000  (budget: 1%)
