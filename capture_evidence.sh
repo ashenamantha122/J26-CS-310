@@ -53,13 +53,65 @@ echo "  [4/4] lsm_test.txt"
 (
     cd "$ROOT"
     echo "captured: $(stamp)"
-    echo "command:  live_probe.sh 12 & run_live.py --lsm --baseline 12 --seconds 16"
+    echo "command:  python3 scenario/test_inheritance.py"
     echo
-    bash scenario/live_probe.sh 12 &
-    python3 run_live.py --lsm --baseline 12 --seconds 16 2>&1
+    python3 scenario/test_inheritance.py 2>&1
+) > "$OUT/inheritance_test.txt"
+echo "  [+]   inheritance_test.txt"
+
+rm -f "$OUT/live_audit.jsonl" "$OUT/live_telemetry.csv"
+READY="$(mktemp -u /tmp/laax_ready.XXXXXX)"
+(
+    cd "$ROOT"
+    echo "captured: $(stamp)"
+    echo "command:  live_probe.sh 12 READY & run_live.py --lsm --baseline 12 --seconds 16" \
+         "--ready-file READY --audit demo_evidence/live_audit.jsonl" \
+         "--export demo_evidence/live_telemetry.csv"
+    echo
+    bash scenario/live_probe.sh 12 "$READY" &
+    python3 run_live.py --lsm --baseline 12 --seconds 16 --ready-file "$READY" \
+        --audit "$OUT/live_audit.jsonl" --export "$OUT/live_telemetry.csv" 2>&1
+    rm -f "$READY"
     wait
+    echo
+    echo "audit chain:  $(python3 -m services.c1_audit verify "$OUT/live_audit.jsonl")"
+    echo "C3 schema:    $(python3 -m services.c1_telemetry "$OUT/live_telemetry.csv" | head -3)"
 ) > "$OUT/live_agent.txt"
-echo "  [+]   live_agent.txt"
+echo "  [+]   live_agent.txt (+ live_audit.jsonl, live_telemetry.csv)"
+
+(
+    cd "$ROOT"
+    echo "captured: $(stamp)"
+    echo "command:  python3 benchmarks/kernel_overhead.py --runs 10"
+    echo
+    python3 benchmarks/kernel_overhead.py --runs 10 2>&1 | grep -vE "run [0-9]+/|^\s+\[C1\]"
+) > "$OUT/kernel_overhead.txt"
+echo "  [+]   kernel_overhead.txt"
+
+(
+    cd "$ROOT"
+    echo "captured: $(stamp)"
+    for c in "" "--no-curve"; do
+        echo; echo "command:  python3 benchmarks/transport_throughput.py --events 100000 $c"
+        python3 benchmarks/transport_throughput.py --events 100000 $c 2>&1
+    done
+) > "$OUT/transport_throughput.txt"
+echo "  [+]   transport_throughput.txt"
+
+(
+    cd "$ROOT"
+    echo "captured: $(stamp)"
+    echo "command:  python3 -m unittest discover -s tests -v"
+    echo
+    python3 -m unittest discover -s tests -v 2>&1 | grep -vE "^\s+\[C1\]"
+) > "$OUT/unit_tests.txt"
+echo "  [+]   unit_tests.txt"
+
+if [ "${LAAX_TEST_INSTALL:-0}" = 1 ]; then
+    # Installs, runs and PURGES the package on this machine -- opt-in only.
+    ( echo "captured: $(stamp)"; bash "$ROOT/packaging/test-install.sh" 2>&1 ) > "$OUT/package_install.txt"
+    echo "  [+]   package_install.txt"
+fi
 
 echo
 echo "done. Files in $OUT:"

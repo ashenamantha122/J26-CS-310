@@ -2,9 +2,22 @@
 # Drives the live run: ordinary work during the baseline window, then a process
 # lineage the baseline has never seen, so the agent has something to react to.
 #
-#   bash scenario/live_probe.sh <baseline_seconds>
+#   bash scenario/live_probe.sh <baseline_seconds> [ready_file]
+#
+# With ready_file, wait until run_live.py --ready-file creates it, so the
+# benign phase lines up with the agent's learning window however long the
+# agent takes to start.
 set -uo pipefail
 BASELINE="${1:-12}"
+READY="${2:-}"
+
+if [ -n "$READY" ]; then
+    for _ in $(seq 1 600); do
+        [ -e "$READY" ] && break
+        sleep 0.1
+    done
+    [ -e "$READY" ] || { echo "live_probe: agent never became ready" >&2; exit 1; }
+fi
 
 # --- benign: the same handful of lineages over and over -------------------
 end=$(( $(date +%s) + BASELINE ))
@@ -26,3 +39,13 @@ for _ in 1 2 3 4 5; do
     bash -c 'od -N4 /dev/urandom' >/dev/null 2>&1
     sleep 0.2
 done
+
+# --- a suspicious shell that keeps working ---------------------------------
+# Everything above lives for milliseconds: each command has finished before
+# the agent's decision reaches the kernel, so there is nothing left to trace
+# deeply. An attacker's shell is not like that -- it stays and keeps running
+# commands. Once it is promoted, every later child is captured with full argv,
+# in-kernel, from the fork onwards. This is the case deep mode exists for.
+sleep 1
+bash -c 'whoami; sleep 0.5; id -un; cat /etc/hostname; ls -la /tmp; uname -r;
+         sleep 0.5; head -c 32 /dev/urandom | base64; ps -o pid,comm' >/dev/null 2>&1

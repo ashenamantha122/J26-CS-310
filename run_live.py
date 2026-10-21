@@ -21,6 +21,7 @@ import asyncio
 import statistics
 import sys
 import time
+from pathlib import Path
 
 from services.ebpf_source import (
     EbpfBackend,
@@ -91,14 +92,19 @@ async def calibrate(loader: EbpfLoader, n: int, settle: float) -> None:
 
 
 async def live(loader: EbpfLoader, seconds: float, baseline: float,
-               export: str | None = None, host_ip: str = "-") -> None:
+               export: str | None = None, host_ip: str = "-",
+               audit_path: str | None = None,
+               ready_file: str | None = None) -> None:
     # Imported here, not at module scope: --calibrate needs only the loader, and
     # requiring networkx/torch to measure an attach latency would be absurd.
     from laax.bus import InProcBus
     from services.c1_agent import C1Agent
+    from services.c1_audit import AuditLog
 
     bus = InProcBus()
-    agent = C1Agent(bus, EbpfKernelSource(loader), backend=EbpfBackend(loader))
+    audit = AuditLog(audit_path)
+    agent = C1Agent(bus, EbpfKernelSource(loader), backend=EbpfBackend(loader),
+                    audit=audit)
     exporter = None
     if export:
         from services.c1_telemetry import TelemetryCsvExporter
@@ -122,6 +128,12 @@ async def live(loader: EbpfLoader, seconds: float, baseline: float,
              asyncio.create_task(agent.decay_loop())]
 
     print(f"  learning the baseline for {baseline:.0f}s -- run ordinary work now")
+    if ready_file:
+        # Tells a workload script the learning window has actually started.
+        # Without it the script's clock starts at launch, and when start-up is
+        # slow (importing torch for C3 takes seconds) its "anomalous" phase
+        # lands inside the learning window, where switching is disabled.
+        Path(ready_file).touch()
     await asyncio.sleep(baseline)
     agent.scorer.freeze()
     print(f"  baseline frozen: {len(agent.scorer.counts['lineage'])} lineage pairs, "
@@ -144,6 +156,9 @@ async def live(loader: EbpfLoader, seconds: float, baseline: float,
         print(f"    c3_telemetry_rows            {exporter.rows}  -> {export}")
     print(f"    event_loss_pct               "
           f"{(100.0 * drops / total) if total else 0.0:.4f}  (budget: 1%)")
+    audit.close()
+    if audit_path:
+        print(f"    audit_records                {len(audit.records)}  -> {audit_path}")
 
 
 async def main() -> int:
@@ -158,6 +173,11 @@ async def main() -> int:
                     help="write C1 telemetry in the C3 schema to this file")
     ap.add_argument("--host-ip", default="-",
                     help="this host's address, for the host_ip column")
+    ap.add_argument("--audit", metavar="JSONL",
+                    help="append the hash-chained audit log (FR7) to this file")
+    ap.add_argument("--ready-file", metavar="PATH",
+                    help="touch this file when the baseline window starts "
+                         "(scenario/live_probe.sh waits for it)")
     args = ap.parse_args()
 
     if not sys.platform.startswith("linux"):
@@ -178,7 +198,8 @@ async def main() -> int:
             await calibrate(loader, args.iterations, args.settle)
         else:
             await live(loader, args.seconds, args.baseline,
-                       export=args.export, host_ip=args.host_ip)
+                       export=args.export, host_ip=args.host_ip,
+                       audit_path=args.audit, ready_file=args.ready_file)
     finally:
         await loader.stop()
     return 0

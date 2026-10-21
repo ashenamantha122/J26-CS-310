@@ -86,7 +86,9 @@ async def main(trace: bool = False, export: str | None = None) -> None:
 
     # ---------------------------------------------------------------- 3
     banner(3, "ATTACK -- IoT pivots into the managed host")
-    print("  Watch for: C3 correlates -> E(t) raises C1 -> C1 flips to DEEP -> C4 contains")
+    print("  Watch for: C3 correlates -> E(t) raises C1 -> C4 contains.")
+    print("  Note: with scoring-v2's current +6 C3 contract, E(t) alone is not a")
+    print("  demonstrated DEEP transition (0.49 + 6.00 < theta_up 7.00).")
     await attack_phase(source)
     await bus.drain()
     await asyncio.sleep(0.3)
@@ -110,12 +112,14 @@ async def main(trace: bool = False, export: str | None = None) -> None:
             print(f"    {k:<28} {json.dumps(v) if isinstance(v, dict) else v}")
 
     print(f"\n  bus messages published        {bus.published}")
-    lat = c1.ctl.attach_latencies
-    if lat:
+    c1_stats = c1.stats()
+    worst_switch = c1_stats["worst_switch_ms"]
+    if worst_switch:
         print(f"\n  \033[1mHeadline claim check\033[0m")
         print(f"    switch latency budget       500 ms")
-        print(f"    measured max                {max(lat):.2f} ms   "
-              f"{'PASS' if max(lat) < 500 else 'FAIL'}")
+        print(f"    worst switch (attach/detach) {worst_switch:.2f} ms   "
+              f"{'PASS' if worst_switch < 500 else 'FAIL'}")
+        print(f"    latency source              {c1_stats['latency_source']}")
         print(f"    benign-phase switches       {0}  (no false deep-mode entry)")
 
     for t in tasks:
