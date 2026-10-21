@@ -13,7 +13,7 @@ ARCH     := $(shell uname -m | sed 's/x86_64/x86/; s/aarch64/arm64/')
 
 BPF_CFLAGS := -O2 -g -target bpf -D__TARGET_ARCH_$(ARCH) -Wall
 CFLAGS     := -O2 -g -Wall
-LDLIBS     := -lbpf -lelf -lz
+LDLIBS     := -lbpf -lelf -lz -lpthread
 
 .PHONY: all clean run check
 all: laax-loader

@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <time.h>
 #include <poll.h>
+#include <pthread.h>
 #include <signal.h>
 #include <arpa/inet.h>
 #include <bpf/libbpf.h>
@@ -47,8 +48,10 @@ static double now_ms(void)
 }
 
 /* Deep-mode links, created on ATTACH_DEEP and destroyed on DETACH_DEEP. */
-static struct bpf_link *deep_links[2];
+#define N_DEEP 4
+static struct bpf_link *deep_links[N_DEEP];
 static int deep_attached;
+static void join_detach(void);
 
 static const char *kind_name(__u8 k)
 {
@@ -56,19 +59,31 @@ static const char *kind_name(__u8 k)
     case LAAX_EXEC:    return "exec";
     case LAAX_CONNECT: return "connect";
     case LAAX_ACCEPT:  return "accept";
+    case LAAX_FORK:    return "fork";
+    case LAAX_EXIT:    return "exit";
+    case LAAX_FILE:    return "file";
     default:           return "other";
     }
 }
 
-static void json_escape(const char *in, char *out, size_t n)
+/* Escape the first len bytes of in for JSON. argv arrives NUL-separated, so a
+   NUL inside the used length becomes the separator 0x1f and user space splits
+   on it; a space would be ambiguous with arguments that contain spaces. */
+static void json_escape_n(const char *in, size_t len, char *out, size_t n)
 {
     size_t o = 0;
-    for (size_t i = 0; in[i] && o + 2 < n; i++) {
+    for (size_t i = 0; i < len && o + 7 < n; i++) {
         unsigned char c = (unsigned char)in[i];
-        if (c == '"' || c == '\\') { out[o++] = '\\'; out[o++] = c; }
+        if (c == '\0') { o += snprintf(out + o, n - o, "\\u001f"); }
+        else if (c == '"' || c == '\\') { out[o++] = '\\'; out[o++] = c; }
         else if (c >= 0x20 && c < 0x7f) { out[o++] = c; }
     }
     out[o] = '\0';
+}
+
+static void json_escape(const char *in, char *out, size_t n)
+{
+    json_escape_n(in, strnlen(in, TASK_COMM_LEN), out, n);
 }
 
 static int handle_event(void *ctx, void *data, size_t len)
@@ -78,23 +93,40 @@ static int handle_event(void *ctx, void *data, size_t len)
         return 0;
     const struct laax_event *e = data;
 
-    char comm[64], pcomm[64], argv[512];
+    char comm[64], pcomm[64], gpcomm[64], argv[MAX_ARGV_LEN * 6 + 8];
     json_escape(e->comm, comm, sizeof(comm));
     json_escape(e->pcomm, pcomm, sizeof(pcomm));
-    json_escape(e->argv, argv, sizeof(argv));
+    json_escape(e->gpcomm, gpcomm, sizeof(gpcomm));
+    size_t alen = e->argv_len < MAX_ARGV_LEN ? e->argv_len : MAX_ARGV_LEN - 1;
+    /* Trailing NUL of the last argument is not a separator. */
+    while (alen && e->argv[alen - 1] == '\0')
+        alen--;
+    json_escape_n(e->argv, alen, argv, sizeof(argv));
 
-    char daddr[INET_ADDRSTRLEN] = "";
-    char saddr[INET_ADDRSTRLEN] = "";
-    if (e->daddr) inet_ntop(AF_INET, &e->daddr, daddr, sizeof(daddr));
-    if (e->saddr) inet_ntop(AF_INET, &e->saddr, saddr, sizeof(saddr));
+    char filename[MAX_PATH_LEN * 6 + 8];
+    json_escape_n(e->filename, strnlen(e->filename, MAX_PATH_LEN), filename, sizeof(filename));
+
+    static const __u8 zero6[16];
+    char daddr[INET6_ADDRSTRLEN] = "";
+    char saddr[INET6_ADDRSTRLEN] = "";
+    if (e->family == LAAX_AF_INET6) {
+        if (memcmp(e->daddr6, zero6, 16)) inet_ntop(AF_INET6, e->daddr6, daddr, sizeof(daddr));
+        if (memcmp(e->saddr6, zero6, 16)) inet_ntop(AF_INET6, e->saddr6, saddr, sizeof(saddr));
+    } else {
+        if (e->daddr) inet_ntop(AF_INET, &e->daddr, daddr, sizeof(daddr));
+        if (e->saddr) inet_ntop(AF_INET, &e->saddr, saddr, sizeof(saddr));
+    }
+    const char *proto = e->proto == 6 ? "tcp" : e->proto == 17 ? "udp" : "";
 
     printf("{\"ts_ns\":%llu,\"pid\":%u,\"ppid\":%u,\"comm\":\"%s\","
-           "\"pcomm\":\"%s\",\"kind\":\"%s\",\"depth\":\"%s\","
-           "\"daddr\":\"%s\",\"saddr\":\"%s\",\"dport\":%u,"
-           "\"argv\":\"%s\",\"ret\":%d}\n",
-           (unsigned long long)e->ts_ns, e->pid, e->ppid, comm, pcomm,
+           "\"pcomm\":\"%s\",\"gpcomm\":\"%s\",\"kind\":\"%s\",\"depth\":\"%s\","
+           "\"family\":%u,\"proto\":\"%s\","
+           "\"daddr\":\"%s\",\"saddr\":\"%s\",\"dport\":%u,\"sport\":%u,"
+           "\"filename\":\"%s\",\"argv\":\"%s\",\"flags\":%u,\"ret\":%d}\n",
+           (unsigned long long)e->ts_ns, e->pid, e->ppid, comm, pcomm, gpcomm,
            kind_name(e->kind), e->depth == LAAX_DEEP ? "deep" : "light",
-           daddr, saddr, e->dport, argv, e->ret);
+           e->family, proto, daddr, saddr, e->dport, e->sport, filename, argv,
+           e->flags, e->ret);
     fflush(stdout);
     return 0;
 }
@@ -102,15 +134,29 @@ static int handle_event(void *ctx, void *data, size_t len)
 static void attach_deep(struct laax_bpf *skel)
 {
     if (deep_attached) { printf("#LAT attach 0.000\n"); fflush(stdout); return; }
+    join_detach();                  /* links array is the worker's until then */
     double t0 = now_ms();
     /* Programs are already loaded and verified. Only link creation happens
        here -- this is the entire cost of a mode switch. */
-    deep_links[0] = bpf_program__attach(skel->progs.laax_deep_exec);
-    deep_links[1] = bpf_program__attach(skel->progs.laax_deep_send);
+    struct bpf_program *progs[N_DEEP] = {
+        skel->progs.laax_deep_exec, skel->progs.laax_deep_send,
+        skel->progs.laax_deep_accept, skel->progs.laax_deep_file,
+    };
+    int ok = 1;
+    for (int i = 0; i < N_DEEP; i++) {
+        deep_links[i] = bpf_program__attach(progs[i]);
+        if (!deep_links[i]) { ok = 0; break; }
+    }
     double dt = now_ms() - t0;
 
-    if (!deep_links[0] || !deep_links[1]) {
+    if (!ok) {
         fprintf(stderr, "attach_deep failed: %s\n", strerror(errno));
+        /* All or nothing: a half-attached deep tier would report deep mode
+           while silently missing whole event classes. */
+        for (int i = 0; i < N_DEEP; i++) {
+            bpf_link__destroy(deep_links[i]);
+            deep_links[i] = NULL;
+        }
         printf("#ERR attach\n");
     } else {
         deep_attached = 1;
@@ -119,18 +165,55 @@ static void attach_deep(struct laax_bpf *skel)
     fflush(stdout);
 }
 
-static void detach_deep(void)
+/*
+ * Detach runs on a worker thread. Each kprobe unregister waits out an RCU grace
+ * period and the kernel serialises them (measured: ~95 ms per probe, 4 probes
+ * ~390 ms; destroying them from parallel threads did not overlap them). Done on
+ * the main thread, that would stop ring-buffer consumption for the whole time,
+ * exactly during a mode transition -- where the event-loss budget applies.
+ *
+ * Collection does not depend on the teardown: user space removes the last pid
+ * from deep_pids before asking for DETACH_DEEP, so the deep programs are
+ * already no-ops. Detach only reclaims their per-call cost.
+ */
+static pthread_t detach_tid;
+static int detach_pending;
+
+static void destroy_deep_links(void)
 {
-    if (!deep_attached) { printf("#LAT detach 0.000\n"); fflush(stdout); return; }
     double t0 = now_ms();
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < N_DEEP; i++) {
         bpf_link__destroy(deep_links[i]);
         deep_links[i] = NULL;
     }
-    double dt = now_ms() - t0;
-    deep_attached = 0;
-    printf("#LAT detach %.4f\n", dt);
+    printf("#LAT detach %.4f\n", now_ms() - t0);
     fflush(stdout);
+}
+
+static void *detach_worker(void *_unused)
+{
+    (void)_unused;
+    destroy_deep_links();
+    return NULL;
+}
+
+static void join_detach(void)
+{
+    if (detach_pending) {
+        pthread_join(detach_tid, NULL);
+        detach_pending = 0;
+    }
+}
+
+static void detach_deep(int async)
+{
+    if (!deep_attached) { printf("#LAT detach 0.000\n"); fflush(stdout); return; }
+    deep_attached = 0;
+    if (async && pthread_create(&detach_tid, NULL, detach_worker, NULL) == 0) {
+        detach_pending = 1;
+        return;
+    }
+    destroy_deep_links();
 }
 
 static void map_op(int fd, __u32 pid, int add, const char *label)
@@ -152,14 +235,17 @@ static void print_drops(struct laax_bpf *skel)
     bpf_map__lookup_elem(skel->maps.dropped, &k, sizeof(k), &v, sizeof(v), 0);
     printf("#DROP %llu\n", (unsigned long long)v);
 
-    __u32 k0 = 0, k1 = 1;
-    __u64 fired = 0, matched = 0;
+    __u32 k0 = 0, k1 = 1, k2 = 2;
+    __u64 fired = 0, matched = 0, inherit_full = 0;
     bpf_map__lookup_elem(skel->maps.lsm_stats, &k0, sizeof(k0),
                          &fired, sizeof(fired), 0);
     bpf_map__lookup_elem(skel->maps.lsm_stats, &k1, sizeof(k1),
                          &matched, sizeof(matched), 0);
-    printf("#LSM fired=%llu matched=%llu\n",
-           (unsigned long long)fired, (unsigned long long)matched);
+    bpf_map__lookup_elem(skel->maps.lsm_stats, &k2, sizeof(k2),
+                         &inherit_full, sizeof(inherit_full), 0);
+    printf("#LSM fired=%llu matched=%llu inherit_map_full=%llu\n",
+           (unsigned long long)fired, (unsigned long long)matched,
+           (unsigned long long)inherit_full);
     fflush(stdout);
 }
 
@@ -189,9 +275,12 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    /* Light mode only. bpf_program__attach on the two tracepoints. */
+    /* Light mode only: exec, connect, and the fork/exit pair that carries
+       deep and deny state down the process tree and clears it on exit. */
     if (!bpf_program__attach(skel->progs.laax_exec) ||
-        !bpf_program__attach(skel->progs.laax_connect)) {
+        !bpf_program__attach(skel->progs.laax_connect) ||
+        !bpf_program__attach(skel->progs.laax_fork) ||
+        !bpf_program__attach(skel->progs.laax_exit)) {
         fprintf(stderr, "light attach failed: %s\n", strerror(errno));
         laax_bpf__destroy(skel);
         return 1;
@@ -216,11 +305,16 @@ int main(int argc, char **argv)
     char line[256];
 
     while (running) {
-        int n = poll(pfds, 2, 200);
+        /* 10 ms: the BPF side wakes us only for large backlogs (submit() in
+           laax.bpf.c), so this timer is what delivers ordinary events. It
+           bounds the added latency at 10 ms against the 500 ms switch budget. */
+        int n = poll(pfds, 2, 10);
         if (n < 0 && errno != EINTR) break;
 
-        if (pfds[0].revents & POLLIN)
-            ring_buffer__consume(rb);
+        /* Unconditionally: events submitted without a wake-up never raise
+           POLLIN, so waiting for it would leave them in the buffer. Consuming
+           an empty ring buffer is two loads and a compare. */
+        ring_buffer__consume(rb);
 
         if (pfds[1].fd >= 0 && (pfds[1].revents & (POLLIN | POLLHUP))) {
             if (!fgets(line, sizeof(line), stdin)) {
@@ -236,7 +330,7 @@ int main(int argc, char **argv)
             unsigned pid = 0;
 
             if (!strcmp(line, "ATTACH_DEEP"))            attach_deep(skel);
-            else if (!strcmp(line, "DETACH_DEEP"))       detach_deep();
+            else if (!strcmp(line, "DETACH_DEEP"))       detach_deep(1);
             else if (sscanf(line, "GATE_ADD %u", &pid) == 1) map_op(gate_fd, pid, 1, "gate_add");
             else if (sscanf(line, "GATE_DEL %u", &pid) == 1) map_op(gate_fd, pid, 0, "gate_del");
             else if (sscanf(line, "DENY_ADD %u", &pid) == 1) map_op(deny_fd, pid, 1, "deny_add");
@@ -246,7 +340,8 @@ int main(int argc, char **argv)
         }
     }
 
-    detach_deep();
+    join_detach();
+    detach_deep(0);
     ring_buffer__free(rb);
     laax_bpf__destroy(skel);
     return 0;
