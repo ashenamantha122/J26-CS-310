@@ -1,0 +1,3 @@
+events: 180855   attack windows: 19
+  raw   (as-run): catch-all conf threshold=      18.1  windows caught=19/19  benign slices firing=848/2549 (FPR 0.333)  peak benign conf=39987
+  canon (fixed) : catch-all conf threshold=      18.3  windows caught=19/19  benign slices firing=60/2549 (FPR 0.024)  peak benign conf=191

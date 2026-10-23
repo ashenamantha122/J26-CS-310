@@ -21,6 +21,7 @@ from __future__ import annotations
 import asyncio
 import ipaddress
 import math
+import re
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -91,6 +92,38 @@ class Score:
         return {"version": "v2", "signals": detail,
                 "raw_evidence": round(self.evidence, 4),
                 "native_score": round(self.native_score, 4)}
+
+
+# --------------------------------------------------------------------------
+# Process-name canonicalisation
+# --------------------------------------------------------------------------
+# Some comms carry a per-thread serial that is unique to every thread in a
+# pool: Firefox names its resolver threads "DNS Res~er #648", "#646", ... and
+# its socket workers rotate too. Keyed raw, every one is a never-before-seen
+# token and scores as maximally rare, so the rarity signal ends up tracking
+# "the browser opened a new worker" instead of anything adversarial. The ROC
+# calibration of 22 Oct 2026 showed these dominated both the attack windows
+# and the benign false-positive wall (~13k events), flattening v1 and v2 to an
+# identical AUC ~0.70. Collapsing the volatile serial to the stable pool name
+# lets the baseline learn it once, as one common key.
+_THREAD_SERIAL = re.compile(r"\s*#\d+$")        # "DNS Res~er #648" -> "DNS Res~er"
+_KWORKER = re.compile(r"^kworker/\S+$")          # kworker/u16:3-events -> kworker
+
+
+def canon_comm(comm: Optional[str]) -> Optional[str]:
+    """Collapse volatile per-thread serials so a thread pool is one rarity key.
+
+    Deliberately conservative: it only removes a trailing ``#<n>`` serial and
+    folds the kernel worker pool. It never touches version suffixes or paths,
+    so genuinely distinct programs (``python3.11`` vs ``python3``) stay
+    distinct and the adversarial signal is preserved.
+    """
+    if not comm:
+        return comm
+    canon = _THREAD_SERIAL.sub("", comm)
+    if _KWORKER.match(canon):
+        return "kworker"
+    return canon
 
 
 class RarityScorer:
@@ -176,13 +209,14 @@ class RarityScorer:
         """Evaluate an event once; callers reuse this for learning and logging."""
         signals: list[Signal] = []
         if ev.kind == "exec":
-            parent = getattr(ev, "comm_parent", None) or "?"
-            grandparent = getattr(ev, "comm_grandparent", None)
+            child = canon_comm(ev.comm)
+            parent = canon_comm(getattr(ev, "comm_parent", None)) or "?"
+            grandparent = canon_comm(getattr(ev, "comm_grandparent", None))
             if grandparent:
-                ctx, key = "ancestry_2", (grandparent, parent, ev.comm)
+                ctx, key = "ancestry_2", (grandparent, parent, child)
                 why = "two-step ancestry"
             else:
-                ctx, key = "lineage", (parent, ev.comm)
+                ctx, key = "lineage", (parent, child)
                 why = "one-step ancestry fallback"
             signals.append(Signal("ancestry", ctx, key, self.rarity(ctx, key), why))
             if ev.exe:
@@ -192,7 +226,7 @@ class RarityScorer:
                                       "executed binary path"))
         if ev.kind in ("connect", "accept"):
             zone = self.destination_zone(ev.daddr)
-            key = (ev.comm, zone, ev.dport or 0)
+            key = (canon_comm(ev.comm), zone, ev.dport or 0)
             signals.append(Signal("egress", "egress", key,
                                   self.rarity("egress", key),
                                   f"destination zone {zone}"))

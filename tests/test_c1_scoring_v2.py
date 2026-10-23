@@ -6,7 +6,7 @@ import unittest
 
 from laax.bus import InProcBus
 from laax.contracts import HostEvent
-from services.c1_agent import C1Agent, RarityScorer
+from services.c1_agent import C1Agent, RarityScorer, canon_comm
 
 
 def event(**values) -> HostEvent:
@@ -165,6 +165,51 @@ class AgentAncestryLookupTests(unittest.IsolatedAsyncioTestCase):
                         if signal.name == "ancestry")
         self.assertEqual(ancestry.context, "ancestry_2")
         self.assertEqual(ancestry.key, ("systemd", "apache2", "sh"))
+
+
+class CommCanonicalisationTests(unittest.TestCase):
+    """Volatile per-thread serials must collapse to one stable rarity key.
+
+    Regression guard for the 22 Oct 2026 ROC finding: Firefox resolver threads
+    (``DNS Res~er #<n>``) each produced a unique key and dominated both the
+    attack windows and the benign false-positive wall.
+    """
+
+    def test_canon_strips_thread_serial(self):
+        self.assertEqual(canon_comm("DNS Res~er #648"), "DNS Res~er")
+        self.assertEqual(canon_comm("DNS Res~er #646"), "DNS Res~er")
+
+    def test_canon_folds_kworker_pool(self):
+        self.assertEqual(canon_comm("kworker/u16:3-events"), "kworker")
+
+    def test_canon_preserves_distinct_programs(self):
+        # Conservative: version suffixes and ordinary names are untouched.
+        self.assertEqual(canon_comm("python3.11"), "python3.11")
+        self.assertEqual(canon_comm("curl"), "curl")
+        self.assertIsNone(canon_comm(None))
+
+    def test_resolver_threads_share_one_egress_key(self):
+        scorer = RarityScorer()
+        first = event(kind="connect", comm="DNS Res~er #648",
+                      daddr="8.8.8.8", dport=53)
+        second = event(kind="connect", comm="DNS Res~er #991",
+                       daddr="8.8.8.8", dport=53)
+        key1 = scorer.evaluate(first).signals[0].key
+        key2 = scorer.evaluate(second).signals[0].key
+        self.assertEqual(key1, key2)
+
+    def test_learning_one_resolver_thread_tames_the_next(self):
+        # After the pool is seen once, a sibling thread is no longer "novel".
+        scorer = RarityScorer()
+        seen = scorer.evaluate(event(kind="connect", comm="DNS Res~er #648",
+                                     daddr="8.8.8.8", dport=53)).signals[0]
+        for _ in range(50):
+            scorer.observe(seen.context, seen.key)
+        novel_raw = scorer.rarity("egress", ("DNS Res~er #777", "public", 53))
+        novel_canon = scorer.evaluate(
+            event(kind="connect", comm="DNS Res~er #777",
+                  daddr="8.8.8.8", dport=53)).signals[0].rarity
+        self.assertLess(novel_canon, novel_raw)
 
 
 if __name__ == "__main__":

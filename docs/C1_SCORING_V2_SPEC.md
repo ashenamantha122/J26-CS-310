@@ -47,6 +47,26 @@ example, must remain a new executable-path observation rather than being
 absorbed on first use. Adding new benign keys requires an explicitly reviewed
 baseline/retraining window.
 
+## Process-name canonicalisation
+
+Rarity keys are built from `comm`, but some comms carry a per-thread serial
+that is unique to every thread in a pool: Firefox names its resolver threads
+`DNS Res~er #648`, `#646`, … and rotates its socket workers. Keyed raw, every
+such thread is a never-before-seen token scoring as maximally rare, so the
+signal tracks "the browser spawned a new worker" rather than anything
+adversarial. The ROC calibration of 22 Oct 2026 showed these dominated both the
+attack windows and the benign false-positive wall (~13k events; benign
+confidence peaking ~40,000), flattening v1 and v2 to an identical AUC ≈ 0.70.
+
+`canon_comm()` collapses the volatile serial to the stable pool name before
+keying, at the ancestry and egress sites. It is deliberately conservative — it
+only strips a trailing ` #<n>` and folds the `kworker` pool, never touching
+version suffixes or paths — so genuinely distinct programs stay distinct and
+the adversarial signal is preserved. Offline re-score of the 22 Oct capture
+(`benchmarks/rescore_canon.py`) estimates the benign false-positive rate at the
+all-attacks-caught threshold falling from 0.333 to 0.024, with no loss of
+recall. Confirm with a post-fix live run.
+
 ## Acceptance tests
 
 `tests/test_c1_scoring_v2.py` verifies the agent's own grandparent lookup,
