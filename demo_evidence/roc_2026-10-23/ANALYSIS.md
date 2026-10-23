@@ -69,6 +69,25 @@ AI-use note: `canon_comm` and `rescore_canon.py` were written with Claude Code
 (Opus) assistance on 2026-10-23, reviewed by the student; record in the PP1
 AI-use log.
 
+## Post-fix LIVE re-run (2026-10-23, same Kali host)
+v2 rebuilt from the pushed fix (fa994cb); v1 reference unchanged. 12 ART attacks
+(all 6 tests), fresh baseline, logs `v2b.jsonl`/`v1b.jsonl`, labels `labels2.csv`,
+`roc2_result.txt` / `roc2.csv`.
+
+| target recall 0.9 | v1 (no fix) | v2 (fixed) |
+|---|---|---|
+| AUC | 0.420 | **0.992** |
+| recommended θ↑ | 28.9 (FPR 0.655) | **45.7 (FPR 0.011)** |
+| recall at θ↑ | 1.00 | 0.92 (misses T1053.003-3) |
+
+The canonicalisation fix is confirmed live: v2 goes from tied-with-v1 (~0.70 AUC,
+~0.32 FPR on 22 Oct) to AUC 0.992 at ~1% FPR, clearly separating from unfixed v1
+(0.420) on the same stream. Corroborates the offline ~14x estimate.
+
+Limitations (state honestly): benign window was short (0.49 h, 177 slices), so the
+FPR figure is coarse; v2 still misses the cron-file-drop test (T1053.003-3) at the
+0.9-recall threshold. A longer benign run would firm up the numbers for the thesis.
+
 ## Honest status for PP1
 - The 22 Oct run is a valid *preliminary* calibration that surfaced a real
   feature-extraction bug. Do **not** claim v2 > v1 or any usable detection rate
